@@ -17,6 +17,7 @@
         "lucide-react": "^0.563.0"
     },
     "devDependencies": {
+        "@next/swc": "15.5.11",
         "@types/node": "^20.11.5",
         "@types/react": "^18.2.48",
         "@types/react-dom": "^18.2.18",
