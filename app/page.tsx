@@ -1,17 +1,19 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import Header from './components/Header';
-import Hero from './components/Hero';
-import HowItWorks from './components/HowItWorks';
-import QuoteGenerator from './components/QuoteGenerator';
-import QuoteResult from './components/QuoteResult';
-import ConfigModal from './components/ConfigModal';
-import Login from './components/Login';
-import LimitReachedModal from './components/LimitReachedModal';
+import Header from '@/components/Header';
+import Hero from '@/components/Hero';
+import HowItWorks from '@/components/HowItWorks';
+import QuoteGenerator from '@/components/QuoteGenerator';
+import QuoteResult from '@/components/QuoteResult';
+import ConfigModal from '@/components/ConfigModal';
+import Login from '@/components/Login';
+import LimitReachedModal from '@/components/LimitReachedModal';
 
-import { login, generateQuote, generateDemoQuote, getMaterials, addMaterial, updateMaterial, updateCompany, upgradeSubscription } from './api';
-import { generatePDF } from './utils/pdfGenerator';
-import { parseMessage } from './utils/parsingLogic';
+import { login, generateQuote, getMaterials, addMaterial, updateMaterial, updateCompany, upgradeSubscription } from '@/lib/api';
+import { generatePDF } from '@/lib/pdfGenerator';
+import { parseMessage } from '@/lib/parsingLogic';
 
 // Default materials for localStorage-only users
 const DEFAULT_MATERIALS = [
@@ -24,17 +26,11 @@ const DEFAULT_MATERIALS = [
   { id: 7, name: 'Hierro / Acero (kg)', unit: 'kg', price: 1200, keywords: ['hierro', 'acero', 'barra del', 'hierro del'] }
 ];
 
-function App() {
-  // ... (state remains same)
-  // We need to keep the state declarations if I'm not replacing the whole file. 
-  // Wait, I can't replace imports easily if I target lines in the middle.
-
-  // Let's target the exact lines for handlers.
-
+export default function Home() {
   // Global State
-  const [user, setUser] = useState(null);
-  const [company, setCompany] = useState(null);
-  const [materials, setMaterials] = useState([]);
+  const [user, setUser] = useState<any>(null);
+  const [company, setCompany] = useState<any>(null);
+  const [materials, setMaterials] = useState<any[]>([]);
 
   // UI State
   const [isConfigOpen, setIsConfigOpen] = useState(false);
@@ -44,9 +40,12 @@ function App() {
   // Demo / Auth State
   const [demoQuoteCount, setDemoQuoteCount] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authReason, setAuthReason] = useState('generic'); // 'generic', 'download', 'limit'
+  const [authReason, setAuthReason] = useState('generic');
 
-  const [quoteItems, setQuoteItems] = useState([]);
+  const [quoteItems, setQuoteItems] = useState<any[]>([]);
+  const [quoteTotal, setQuoteTotal] = useState(0);
+  const [hasGenerated, setHasGenerated] = useState(false);
+  const [showPalletInfo, setShowPalletInfo] = useState(false);
 
   // Helper: Get current month key
   const getMonthKey = () => {
@@ -63,37 +62,32 @@ function App() {
       if (data.month === getMonthKey()) {
         return data.count || 0;
       }
-      return 0; // Reset if different month
+      return 0;
     } catch {
       return 0;
     }
   };
 
   // Helper: Set demo quote count to localStorage
-  const setDemoQuoteCountStorage = (count) => {
+  const setDemoQuoteCountStorage = (count: number) => {
     localStorage.setItem('cotizar_demo', JSON.stringify({
       month: getMonthKey(),
       count: count
     }));
   };
-  const [quoteTotal, setQuoteTotal] = useState(0);
-  const [hasGenerated, setHasGenerated] = useState(false);
-  const [showPalletInfo, setShowPalletInfo] = useState(false);
 
-  // Load User from Local Storage if available (simple persistence)
+  // Load User from Local Storage if available
   useEffect(() => {
     const storedUser = localStorage.getItem('cotizar_user');
     const storedCompany = localStorage.getItem('cotizar_company');
     const storedMaterials = localStorage.getItem('cotizar_materials');
 
     if (storedUser && storedCompany) {
-      // Logged in user
       setUser(JSON.parse(storedUser));
       const comp = JSON.parse(storedCompany);
       setCompany(comp);
       refreshMaterials(comp.id);
     } else {
-      // Guest user - initialize with defaults
       if (!storedCompany) {
         const defaultCompany = {
           id: 'local',
@@ -116,18 +110,15 @@ function App() {
         setMaterials(JSON.parse(storedMaterials));
       }
 
-      // Load demo quote count
       setDemoQuoteCount(getDemoQuoteCount());
     }
   }, []);
 
-  const refreshMaterials = async (companyId) => {
+  const refreshMaterials = async (companyId: string) => {
     if (companyId === 'local') {
-      // Load from localStorage
       const stored = localStorage.getItem('cotizar_materials');
       setMaterials(stored ? JSON.parse(stored) : DEFAULT_MATERIALS);
     } else {
-      // Load from backend
       try {
         const mats = await getMaterials(companyId);
         setMaterials(mats);
@@ -137,30 +128,26 @@ function App() {
     }
   };
 
-  const handleLogin = async (mockUser) => {
+  const handleLogin = async (mockUser: any) => {
     try {
       const session = await login(mockUser);
       setUser(session.user);
       setCompany(session.company);
 
-      // Persist
       localStorage.setItem('cotizar_user', JSON.stringify(session.user));
       localStorage.setItem('cotizar_company', JSON.stringify(session.company));
 
       refreshMaterials(session.company.id);
       setShowAuthModal(false);
 
-      // Clear guest data
       localStorage.removeItem('cotizar_materials');
       localStorage.removeItem('cotizar_demo');
-    } catch (err) {
+    } catch (err: any) {
       alert("Error iniciando sesión: " + err.message);
     }
   };
 
-  // Generate Logic
-  const handleGenerate = async (text) => {
-    // Demo Mode Logic (Guest users get 3 free quotes/month)
+  const handleGenerate = async (text: string) => {
     if (!user) {
       const currentCount = getDemoQuoteCount();
       if (currentCount >= 3) {
@@ -169,16 +156,14 @@ function App() {
         return;
       }
       try {
-        // Use local parseMessage with localStorage materials
         const items = parseMessage(text, materials);
-        const total = items.reduce((acc, item) => acc + item.subtotal, 0);
+        const total = items.reduce((acc: number, item: any) => acc + item.subtotal, 0);
 
         setQuoteItems(items);
         setQuoteTotal(total);
-        setShowPalletInfo(items.hasPallets || false);
+        setShowPalletInfo((items as any).hasPallets || false);
         setHasGenerated(true);
 
-        // Increment and save demo count
         const newCount = currentCount + 1;
         setDemoQuoteCount(newCount);
         setDemoQuoteCountStorage(newCount);
@@ -186,7 +171,7 @@ function App() {
         setTimeout(() => {
           window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }, 100);
-      } catch (err) {
+      } catch (err: any) {
         alert("Error: " + err.message);
       }
       return;
@@ -206,7 +191,7 @@ function App() {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
       }, 100);
 
-    } catch (err) {
+    } catch (err: any) {
       if (err.code === 'LIMIT_REACHED') {
         setIsLimitModalOpen(true);
       } else {
@@ -215,8 +200,7 @@ function App() {
     }
   };
 
-  // Update Logic (Client side for now until endpoints are fully integrated in UI)
-  const handleUpdateItem = (index, newPrice) => {
+  const handleUpdateItem = (index: number, newPrice: number) => {
     const newItems = [...quoteItems];
     newItems[index].price = newPrice;
     newItems[index].subtotal = newItems[index].quantity * newPrice;
@@ -233,8 +217,7 @@ function App() {
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Helper to sync company state from ConfigModal
-  const handleCompanyUpdate = async (newComp) => {
+  const handleCompanyUpdate = async (newComp: any) => {
     setCompany(newComp);
     localStorage.setItem('cotizar_company', JSON.stringify(newComp));
 
@@ -247,9 +230,8 @@ function App() {
     }
   };
 
-  const handleAddMaterial = async (mat) => {
+  const handleAddMaterial = async (mat: any) => {
     if (company.id === 'local') {
-      // LocalStorage
       const newMat = { ...mat, id: Date.now() };
       const newMats = [...materials, newMat];
       setMaterials(newMats);
@@ -264,9 +246,8 @@ function App() {
     }
   };
 
-  const handleMaterialUpdate = async (id, mat) => {
-    // Optimistic update
-    const newMats = materials.map(m => m.id === id ? mat : m);
+  const handleMaterialUpdate = async (id: number, mat: any) => {
+    const newMats = materials.map(m => (m as any).id === id ? mat : m);
     setMaterials(newMats);
 
     if (company.id === 'local') {
@@ -331,7 +312,6 @@ function App() {
         )}
       </main>
 
-      {/* Auth Modal Triggered by Actions */}
       {showAuthModal && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 3000,
@@ -389,7 +369,8 @@ function App() {
       <ConfigModal
         isOpen={isConfigOpen}
         onClose={() => setIsConfigOpen(false)}
-        company={company} setCompany={handleCompanyUpdate}
+        company={company}
+        setCompany={handleCompanyUpdate}
         materials={materials}
         onAddMaterial={handleAddMaterial}
         onUpdateMaterial={handleMaterialUpdate}
@@ -400,5 +381,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
