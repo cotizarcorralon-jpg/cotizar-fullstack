@@ -1,0 +1,24 @@
+{
+    "name": "cotizar-fullstack",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev -p 3000",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "jspdf": "^2.5.2",
+        "lucide-react": "^0.563.0",
+        "next": "^15.1.6",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.5",
+        "@types/react": "^18.2.48",
+        "@types/react-dom": "^18.2.18",
+        "typescript": "^5.3.3"
+    }
+}
