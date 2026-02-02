@@ -1,29 +1,32 @@
 {
-    "name": "cotizar-fullstack",
-    "version": "1.0.0",
-    "private": true,
-    "scripts": {
-        "next": "15.5.11",
-        "build": "next build",
-        "start": "next start",
-        "lint": "next lint"
-    },
-    "dependencies": {
-        "@next/swc": "15.5.11",
-        "react": "^19.0.0",
-        "react-dom": "^19.0.0",
-        "jspdf": "^2.5.1",
-        "jspdf-autotable": "^3.8.2",
-        "lucide-react": "^0.563.0"
-    },
-    "devDependencies": {
-        "@next/swc": "15.5.11",
-        "@types/node": "^20.11.5",
-        "@types/react": "^18.2.48",
-        "@types/react-dom": "^18.2.18",
-        "typescript": "^5.3.3",
-        "tailwindcss": "^3.4.1",
-        "postcss": "^8.4.33",
-        "autoprefixer": "^10.4.17"
-    }
+  "name": "cotizar-fullstack",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "15.5.11",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.8.2",
+    "lucide-react": "^0.563.0"
+  },
+  "devDependencies": {
+    "@next/swc": "15.5.11",
+    "@types/node": "^20.11.5",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "typescript": "^5.3.3",
+    "tailwindcss": "^3.4.1",
+    "postcss": "^8.4.33",
+    "autoprefixer": "^10.4.17"
+  },
+  "overrides": {
+    "@next/swc": "15.5.11"
+  }
 }
