@@ -200,6 +200,13 @@ export default function Home() {
     }
   };
 
+  // ✅ NUEVO: handler para "Usar ejemplo"
+  const handleExample = async () => {
+    const exampleText =
+      "Hola, necesito 10 bolsas de cemento 25kg, 2 m3 de arena, 5 kg de hierro y 1 pallet de ladrillo hueco 12x18x33. Gracias.";
+    await handleGenerate(exampleText);
+  };
+
   const handleUpdateItem = (index: number, newPrice: number) => {
     const newItems = [...quoteItems];
     newItems[index].price = newPrice;
@@ -296,6 +303,7 @@ export default function Home() {
             setHasGenerated(false);
             setShowPalletInfo(false);
           }}
+          onExample={handleExample}
           isDemo={!user}
         />
 
