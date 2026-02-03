@@ -358,7 +358,7 @@ export default function Home() {
                   </p>
                 </div>
               )}
-              <Login onLogin={handleLogin} isModal={true} />
+              <Login onLogin={() => handleLogin(undefined)} isModal={true} />
             </div>
           </div>
         </div>
