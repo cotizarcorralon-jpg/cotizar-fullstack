@@ -1,4 +1,4 @@
-interface Material {
+export interface Material {
     id: string;
     name: string;
     unit: string;
@@ -6,7 +6,7 @@ interface Material {
     synonyms: string[];
 }
 
-interface ParsedItem {
+export interface ParsedItem {
     name: string;
     quantity: number;
     unit: string;
@@ -16,16 +16,27 @@ interface ParsedItem {
     isRecognized: boolean;
 }
 
-interface ParseResult {
+export interface ParseResult {
     items: ParsedItem[];
     notes: string[];
     hasPallets: boolean;
 }
 
+/**
+ * ✅ Función principal (para que puedas importar parseMessage sin cambiar nada)
+ */
+export function parseMessage(text: string, materials: Material[]): ParseResult {
+    return parseWhatsAppMessage(text, materials);
+}
+
+/**
+ * ✅ Alias (por si ya la tenías con este nombre)
+ */
 export function parseWhatsAppMessage(text: string, materials: Material[]): ParseResult {
     if (!text) return { items: [], notes: [], hasPallets: false };
 
     const chunks = text.split(/\n|,| y | e | con |\+/i);
+
     const items: ParsedItem[] = [];
     const notes: string[] = [];
     let hasPallets = false;
@@ -36,39 +47,43 @@ export function parseWhatsAppMessage(text: string, materials: Material[]): Parse
 
         const chunkLower = cleanChunk.toLowerCase();
 
-        // 1. Detect Quantity
+        // 1) Detectar cantidad
         const quantityMatch = cleanChunk.match(/(?:x\s*)?(\d+[.,]?\d*)/i);
         let quantity = 1;
 
         if (quantityMatch) {
             const qStr = (quantityMatch[1] || quantityMatch[0]).replace(',', '.');
-            quantity = parseFloat(qStr);
+            const parsed = parseFloat(qStr);
+            quantity = Number.isFinite(parsed) ? parsed : 1;
         }
 
-        // 2. Match Material
+        // 2) Matchear material por synonyms (keyword más largo gana)
         let bestMatch: Material | null = null;
         let maxScore = 0;
 
-        materials.forEach((mat) => {
-            mat.synonyms.forEach((keyword) => {
-                if (chunkLower.includes(keyword.toLowerCase())) {
-                    if (keyword.length > maxScore) {
-                        maxScore = keyword.length;
+        for (const mat of materials) {
+            for (const keyword of mat.synonyms) {
+                const k = keyword.toLowerCase();
+                if (k && chunkLower.includes(k)) {
+                    if (k.length > maxScore) {
+                        maxScore = k.length;
                         bestMatch = mat;
                     }
                 }
-            });
-        });
+            }
+        }
 
-        // 2.5 SPECIAL RULE: PALLETS OF BRICKS
+        // 2.5) Regla especial: pallets de ladrillos
         const isPallet = /palet|pallet/i.test(chunkLower);
         const isBrick = /ladrillo/i.test(chunkLower);
 
         if (isPallet && isBrick && bestMatch) {
             hasPallets = true;
-            let unitsPerPallet = 144; // Default to 12
-            let sizeLabel = '12';
 
+            let unitsPerPallet = 144; // default ladrillo 12
+            let sizeLabel: '8' | '12' | '18' = '12';
+
+            // Primero: inferir desde el texto
             if (/ladrillo.*8|hueco.*8|del.*8/i.test(chunkLower)) {
                 unitsPerPallet = 216;
                 sizeLabel = '8';
@@ -76,10 +91,12 @@ export function parseWhatsAppMessage(text: string, materials: Material[]): Parse
                 unitsPerPallet = 90;
                 sizeLabel = '18';
             } else {
-                if (bestMatch.name.includes('8') && !bestMatch.name.includes('18')) {
+                // Si el texto no aclara, inferimos desde el nombre del material matcheado
+                const nm = bestMatch.name;
+                if (nm.includes('8') && !nm.includes('18')) {
                     unitsPerPallet = 216;
                     sizeLabel = '8';
-                } else if (bestMatch.name.includes('18')) {
+                } else if (nm.includes('18')) {
                     unitsPerPallet = 90;
                     sizeLabel = '18';
                 }
@@ -102,7 +119,7 @@ export function parseWhatsAppMessage(text: string, materials: Material[]): Parse
             return;
         }
 
-        // 3. Construct Result
+        // 3) Resultado normal
         if (bestMatch) {
             items.push({
                 name: bestMatch.name,
@@ -113,9 +130,13 @@ export function parseWhatsAppMessage(text: string, materials: Material[]): Parse
                 materialId: bestMatch.id,
                 isRecognized: true
             });
-        } else if (quantityMatch) {
-            // Unrecognized material
+            return;
+        }
+
+        // 4) No reconocido pero con cantidad: lo agregamos para edición manual
+        if (quantityMatch) {
             let nameClean = cleanChunk;
+
             if (quantityMatch[0]) {
                 nameClean = nameClean.replace(quantityMatch[0], '');
             }
