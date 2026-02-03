@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Download } from 'lucide-react';
 
@@ -20,53 +22,91 @@ type CompanyInfo = {
 type QuoteResultProps = {
   items: QuoteItem[];
   total: number;
-  company?: CompanyInfo; // ✅ ahora existe (aunque no se use todavía)
+  company?: CompanyInfo; // ✅ existe para que page.tsx pueda pasarla
   onUpdateItem: (index: number, newPrice: number) => void;
   onDownload: () => void;
   showPalletInfo: boolean;
   isDemo: boolean;
 };
 
-export default function QuoteResult({
-  items,
-  total,
-  company, // ✅ se recibe para que page.tsx no rompa
-  onUpdateItem,
-  onDownload,
-  showPalletInfo,
-  isDemo
-}: QuoteResultProps) {
+export default function QuoteResult(props: QuoteResultProps) {
+  const {
+    items,
+    total,
+    onUpdateItem,
+    onDownload,
+    showPalletInfo,
+    isDemo
+  } = props;
+
   if (!items || items.length === 0) return null;
 
   return (
     <section style={{ padding: '0 0 60px 0' }}>
       <div className="container">
-        <div className="card" style={{ maxWidth: '800px', margin: '0 auto', borderTop: '4px solid var(--primary)' }}>
-
+        <div
+          className="card"
+          style={{
+            maxWidth: '800px',
+            margin: '0 auto',
+            borderTop: '4px solid var(--primary)'
+          }}
+        >
           {isDemo && (
-            <div style={{ background: '#f0f9ff', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', border: '1px solid #bae6fd' }}>
-              <p style={{ margin: 0, color: '#0369a1', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div
+              style={{
+                background: '#f0f9ff',
+                padding: '1rem',
+                borderRadius: '8px',
+                marginBottom: '1.5rem',
+                border: '1px solid #bae6fd'
+              }}
+            >
+              <p
+                style={{
+                  margin: 0,
+                  color: '#0369a1',
+                  fontSize: '0.9rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
                 ℹ️ Estas viendo una vista previa. Los precios son estimados. Creá tu cuenta para editar materiales y configurar tu empresa.
               </p>
             </div>
           )}
 
           <div style={{ marginBottom: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.5rem' }}>Interpretación del pedido</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+              Interpretación del pedido
+            </h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
               Se detectaron {items.length} ítems. Revisá los precios si es necesario.
             </p>
           </div>
 
           {showPalletInfo && (
-            <div style={{
-              backgroundColor: '#fff7ed',
-              border: '1px solid #ffedd5',
-              borderRadius: '8px',
-              padding: '1rem',
-              marginBottom: '1.5rem'
-            }}>
-              <h4 style={{ color: '#ea580c', fontWeight: 'bold', fontSize: '0.95rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div
+              style={{
+                backgroundColor: '#fff7ed',
+                border: '1px solid #ffedd5',
+                borderRadius: '8px',
+                padding: '1rem',
+                marginBottom: '1.5rem'
+              }}
+            >
+              <h4
+                style={{
+                  color: '#ea580c',
+                  fontWeight: 'bold',
+                  fontSize: '0.95rem',
+                  marginBottom: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
                 📦 Aclaración sobre pallets
               </h4>
               <p style={{ fontSize: '0.9rem', color: '#431407', marginBottom: '0.5rem' }}>
@@ -110,7 +150,7 @@ export default function QuoteResult({
                         <input
                           type="number"
                           value={item.price}
-                          onChange={(e) => onUpdateItem(idx, parseFloat(e.target.value) || 0)}
+                          onChange={(e) => onUpdateItem(idx, Number.parseFloat(e.target.value) || 0)}
                           style={{
                             width: '90px',
                             padding: '4px',
@@ -132,8 +172,18 @@ export default function QuoteResult({
               <tfoot>
                 <tr>
                   <td colSpan={3}></td>
-                  <td style={{ padding: '1.5rem 0.75rem', textAlign: 'right', fontSize: '1.1rem' }}>Total Final:</td>
-                  <td style={{ padding: '1.5rem 0.75rem', textAlign: 'right', fontSize: '1.5rem', fontWeight: '800', color: 'var(--primary)' }}>
+                  <td style={{ padding: '1.5rem 0.75rem', textAlign: 'right', fontSize: '1.1rem' }}>
+                    Total Final:
+                  </td>
+                  <td
+                    style={{
+                      padding: '1.5rem 0.75rem',
+                      textAlign: 'right',
+                      fontSize: '1.5rem',
+                      fontWeight: '800',
+                      color: 'var(--primary)'
+                    }}
+                  >
                     ${total.toLocaleString('es-AR')}
                   </td>
                 </tr>
@@ -147,7 +197,6 @@ export default function QuoteResult({
               Descargar PDF
             </button>
           </div>
-
         </div>
       </div>
     </section>
