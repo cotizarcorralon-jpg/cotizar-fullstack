@@ -367,12 +367,8 @@ export default function Home() {
       <LimitReachedModal
         isOpen={isLimitModalOpen}
         onClose={() => setIsLimitModalOpen(false)}
-        onSubscribe={() => {
-          setIsLimitModalOpen(false);
-          setConfigTab('plan');
-          setIsConfigOpen(true);
-        }}
       />
+
 
       <ConfigModal
         isOpen={isConfigOpen}
