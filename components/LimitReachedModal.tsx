@@ -80,7 +80,9 @@ export default function LimitReachedModal({
 
                 {/* CTA Google */}
                 <button
-                    onClick={() => signIn('google')}
+                    onClick={() => {
+                        signIn('google', { callbackUrl: '/' });
+                    }}
                     style={{
                         width: '100%',
                         padding: '0.9rem 1.2rem',
