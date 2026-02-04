@@ -98,333 +98,301 @@ export default function Home() {
   useEffect(() => {
     if (status === 'authenticated') return; // Don't overwrite if NextAuth is active
 
-    const storedUser = localStorage.getItem('cotizar_user');
-    const storedCompany = localStorage.getItem('cotizar_company');
-    const storedMaterials = localStorage.getItem('cotizar_materials');
-
-    if (storedUser && storedCompany) {
-      setUser(JSON.parse(storedUser));
-      const comp = JSON.parse(storedCompany);
-      setCompany(comp);
-      refreshMaterials(comp.id);
-    } else {
-      if (!storedCompany) {
-        const defaultCompany = {
-          id: 'local',
-          name: 'Mi Empresa',
-          address: 'Dirección de ejemplo',
-          whatsapp: '5491112345678',
-          email: 'contacto@ejemplo.com',
-          plan: 'Guest'
-        };
-        localStorage.setItem('cotizar_company', JSON.stringify(defaultCompany));
-        setCompany(defaultCompany);
-      } else {
-        setCompany(JSON.parse(storedCompany));
-      }
-
-      if (!storedMaterials) {
-        localStorage.setItem('cotizar_materials', JSON.stringify(DEFAULT_MATERIALS));
-        setMaterials(DEFAULT_MATERIALS);
-      } else {
-        setMaterials(JSON.parse(storedMaterials));
-      }
-
-      setDemoQuoteCount(getDemoQuoteCount());
-    }
+    setDemoQuoteCount(getDemoQuoteCount());
+  }
   }, [status]);
 
-  const refreshMaterials = async (companyId: string) => {
-    if (companyId === 'local') {
-      const stored = localStorage.getItem('cotizar_materials');
-      setMaterials(stored ? JSON.parse(stored) : DEFAULT_MATERIALS);
-    } else {
-      try {
-        const mats = await getMaterials(companyId);
-        setMaterials(mats);
-      } catch (e) {
-        console.error("Failed to load materials", e);
-      }
-    }
-  };
-
-  const handleLogin = async (mockUser: any) => {
-    // Legacy mock login function - kept for reference or removal
+const refreshMaterials = async (companyId: string) => {
+  if (companyId === 'local') {
+    const stored = localStorage.getItem('cotizar_materials');
+    setMaterials(stored ? JSON.parse(stored) : DEFAULT_MATERIALS);
+  } else {
     try {
-      const session = await login(mockUser);
-      setUser(session.user);
-      setCompany(session.company);
-
-      localStorage.setItem('cotizar_user', JSON.stringify(session.user));
-      localStorage.setItem('cotizar_company', JSON.stringify(session.company));
-
-      refreshMaterials(session.company.id);
-      setShowAuthModal(false);
-
-      localStorage.removeItem('cotizar_materials');
-      localStorage.removeItem('cotizar_demo');
-    } catch (err: any) {
-      alert("Error iniciando sesión: " + err.message);
+      const mats = await getMaterials(companyId);
+      setMaterials(mats);
+    } catch (e) {
+      console.error("Failed to load materials", e);
     }
-  };
+  }
+};
 
-  const handleGenerate = async (text: string) => {
-    if (!user) {
-      const currentCount = getDemoQuoteCount();
-      if (currentCount >= 3) {
-        setAuthReason('limit');
-        setShowAuthModal(true);
-        return;
-      }
-      try {
-        const items = parseMessage(text, materials);
-        const total = items.reduce((acc: number, item: any) => acc + item.subtotal, 0);
+const handleLogin = async (mockUser: any) => {
+  // Legacy mock login function - kept for reference or removal
+  try {
+    const session = await login(mockUser);
+    setUser(session.user);
+    setCompany(session.company);
 
-        setQuoteItems(items);
-        setQuoteTotal(total);
-        setShowPalletInfo((items as any).hasPallets || false);
-        setHasGenerated(true);
+    localStorage.setItem('cotizar_user', JSON.stringify(session.user));
+    localStorage.setItem('cotizar_company', JSON.stringify(session.company));
 
-        const newCount = currentCount + 1;
-        setDemoQuoteCount(newCount);
-        setDemoQuoteCountStorage(newCount);
+    refreshMaterials(session.company.id);
+    setShowAuthModal(false);
 
-        setTimeout(() => {
-          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }, 100);
-      } catch (err: any) {
-        alert("Error: " + err.message);
-      }
+    localStorage.removeItem('cotizar_materials');
+    localStorage.removeItem('cotizar_demo');
+  } catch (err: any) {
+    alert("Error iniciando sesión: " + err.message);
+  }
+};
+
+const handleGenerate = async (text: string) => {
+  if (!user) {
+    const currentCount = getDemoQuoteCount();
+    if (currentCount >= 3) {
+      setAuthReason('limit');
+      setShowAuthModal(true);
       return;
     }
-
-    if (!company) return;
-
-    // Fix: Enforce limit if user was a guest and used their quota
-    if (company.plan === 'Guest' && getDemoQuoteCount() >= 3) {
-      setIsLimitModalOpen(true);
-      return;
-    }
-
     try {
-      const result = await generateQuote(text, company.id);
+      const items = parseMessage(text, materials);
+      const total = items.reduce((acc: number, item: any) => acc + item.subtotal, 0);
 
-      setQuoteItems(result.items);
-      setQuoteTotal(result.total);
-      setShowPalletInfo(result.hasPallets || false);
+      setQuoteItems(items);
+      setQuoteTotal(total);
+      setShowPalletInfo((items as any).hasPallets || false);
       setHasGenerated(true);
 
-      // Increment local counter for logged-in Guests
-      if (company.plan === 'Guest') {
-        const newCount = getDemoQuoteCount() + 1;
-        setDemoQuoteCount(newCount);
-        setDemoQuoteCountStorage(newCount);
-      }
+      const newCount = currentCount + 1;
+      setDemoQuoteCount(newCount);
+      setDemoQuoteCountStorage(newCount);
 
       setTimeout(() => {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
       }, 100);
-
     } catch (err: any) {
-      if (err.code === 'LIMIT_REACHED') {
-        setIsLimitModalOpen(true);
-      } else {
-        alert("Error generando presupuesto: " + err.message);
-      }
+      alert("Error: " + err.message);
     }
-  };
+    return;
+  }
 
-  // ✅ NUEVO: handler para "Usar ejemplo"
-  const handleExample = async () => {
-    const exampleText =
-      "Hola, necesito 10 bolsas de cemento 25kg, 2 m3 de arena, 5 kg de hierro y 1 pallet de ladrillo hueco 12x18x33. Gracias.";
-    await handleGenerate(exampleText);
-  };
+  if (!company) return;
 
-  const handleUpdateItem = (index: number, newPrice: number) => {
-    const newItems = [...quoteItems];
-    newItems[index].price = newPrice;
-    newItems[index].subtotal = newItems[index].quantity * newPrice;
-    setQuoteItems(newItems);
-    setQuoteTotal(newItems.reduce((acc, item) => acc + item.subtotal, 0));
-  };
+  // Fix: Enforce limit if user was a guest and used their quota
+  if (company.plan === 'Guest' && getDemoQuoteCount() >= 3) {
+    setIsLimitModalOpen(true);
+    return;
+  }
 
-  const handleDownload = () => {
-    generatePDF(company, quoteItems, quoteTotal);
-  };
+  try {
+    const result = await generateQuote(text, company.id);
 
-  const scrollToQuote = () => {
-    const el = document.getElementById('quote-generator');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
-  };
+    setQuoteItems(result.items);
+    setQuoteTotal(result.total);
+    setShowPalletInfo(result.hasPallets || false);
+    setHasGenerated(true);
 
-  const handleCompanyUpdate = async (newComp: any) => {
-    setCompany(newComp);
-    localStorage.setItem('cotizar_company', JSON.stringify(newComp));
-
-    if (company.id !== 'local') {
-      try {
-        await updateCompany(company.id, newComp);
-      } catch (e) {
-        console.error("Failed to save company", e);
-      }
+    // Increment local counter for logged-in Guests
+    if (company.plan === 'Guest') {
+      const newCount = getDemoQuoteCount() + 1;
+      setDemoQuoteCount(newCount);
+      setDemoQuoteCountStorage(newCount);
     }
-  };
 
-  const handleAddMaterial = async (mat: any) => {
-    if (company.id === 'local') {
-      const newMat = { ...mat, id: Date.now() };
-      const newMats = [...materials, newMat];
-      setMaterials(newMats);
-      localStorage.setItem('cotizar_materials', JSON.stringify(newMats));
+    setTimeout(() => {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }, 100);
+
+  } catch (err: any) {
+    if (err.code === 'LIMIT_REACHED') {
+      setIsLimitModalOpen(true);
     } else {
-      try {
-        await addMaterial(mat, company.id);
-        refreshMaterials(company.id);
-      } catch (e) {
-        alert("Error agregando material");
-      }
+      alert("Error generando presupuesto: " + err.message);
     }
-  };
+  }
+};
 
-  const handleMaterialUpdate = async (id: number, mat: any) => {
-    const newMats = materials.map(m => (m as any).id === id ? mat : m);
-    setMaterials(newMats);
+// ✅ NUEVO: handler para "Usar ejemplo"
+const handleExample = async () => {
+  const exampleText =
+    "Hola, necesito 10 bolsas de cemento 25kg, 2 m3 de arena, 5 kg de hierro y 1 pallet de ladrillo hueco 12x18x33. Gracias.";
+  await handleGenerate(exampleText);
+};
 
-    if (company.id === 'local') {
-      localStorage.setItem('cotizar_materials', JSON.stringify(newMats));
-    } else {
-      try {
-        await updateMaterial(id, mat);
-      } catch (e) {
-        console.error("Update failed", e);
-        refreshMaterials(company.id);
-      }
-    }
-  };
+const handleUpdateItem = (index: number, newPrice: number) => {
+  const newItems = [...quoteItems];
+  newItems[index].price = newPrice;
+  newItems[index].subtotal = newItems[index].quantity * newPrice;
+  setQuoteItems(newItems);
+  setQuoteTotal(newItems.reduce((acc, item) => acc + item.subtotal, 0));
+};
 
+const handleDownload = () => {
+  generatePDF(company, quoteItems, quoteTotal);
+};
 
-  const handleUpgrade = async () => {
-    if (!company?.id) {
-      alert("Error: No se encontró el ID de usuario.");
-      return;
-    }
+const scrollToQuote = () => {
+  const el = document.getElementById('quote-generator');
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+};
 
+const handleCompanyUpdate = async (newComp: any) => {
+  setCompany(newComp);
+  localStorage.setItem('cotizar_company', JSON.stringify(newComp));
+
+  if (company.id !== 'local') {
     try {
-      const response = await createCheckoutSession(company.id);
-      if (response.url) {
-        window.location.href = response.url; // Redirigir al usuario al link inteligente
-      } else {
-        alert("Error generando el link de pago.");
-      }
+      await updateCompany(company.id, newComp);
     } catch (e) {
-      console.error(e);
-      alert("Error iniciando el pago. Intenta nuevamente.");
+      console.error("Failed to save company", e);
     }
-  };
+  }
+};
 
-  return (
-    <div className="App">
-      <Header
-        onOpenConfig={() => { setConfigTab('company'); setIsConfigOpen(true); }}
-        user={user}
-        plan={company?.plan}
-        onLoginClick={() => { setAuthReason('generic'); setShowAuthModal(true); }}
+const handleAddMaterial = async (mat: any) => {
+  if (company.id === 'local') {
+    const newMat = { ...mat, id: Date.now() };
+    const newMats = [...materials, newMat];
+    setMaterials(newMats);
+    localStorage.setItem('cotizar_materials', JSON.stringify(newMats));
+  } else {
+    try {
+      await addMaterial(mat, company.id);
+      refreshMaterials(company.id);
+    } catch (e) {
+      alert("Error agregando material");
+    }
+  }
+};
+
+const handleMaterialUpdate = async (id: number, mat: any) => {
+  const newMats = materials.map(m => (m as any).id === id ? mat : m);
+  setMaterials(newMats);
+
+  if (company.id === 'local') {
+    localStorage.setItem('cotizar_materials', JSON.stringify(newMats));
+  } else {
+    try {
+      await updateMaterial(id, mat);
+    } catch (e) {
+      console.error("Update failed", e);
+      refreshMaterials(company.id);
+    }
+  }
+};
+
+
+const handleUpgrade = async () => {
+  if (!company?.id) {
+    alert("Error: No se encontró el ID de usuario.");
+    return;
+  }
+
+  try {
+    const response = await createCheckoutSession(company.id);
+    if (response.url) {
+      window.location.href = response.url; // Redirigir al usuario al link inteligente
+    } else {
+      alert("Error generando el link de pago.");
+    }
+  } catch (e) {
+    console.error(e);
+    alert("Error iniciando el pago. Intenta nuevamente.");
+  }
+};
+
+return (
+  <div className="App">
+    <Header
+      onOpenConfig={() => { setConfigTab('company'); setIsConfigOpen(true); }}
+      user={user}
+      plan={company?.plan}
+      onLoginClick={() => { setAuthReason('generic'); setShowAuthModal(true); }}
+    />
+
+    <main>
+      <Hero onScrollToQuote={scrollToQuote} />
+      <HowItWorks />
+
+      <QuoteGenerator
+        plan={user ? company?.plan : (demoQuoteCount >= 3 ? 'DemoLimit' : 'Guest')}
+        demoQuoteCount={(!user || company?.plan === 'Guest') ? demoQuoteCount : null}
+        onGenerate={handleGenerate}
+        onClear={() => {
+          setQuoteItems([]);
+          setHasGenerated(false);
+          setShowPalletInfo(false);
+        }}
+        onExample={handleExample}
+        isDemo={!user}
       />
 
-      <main>
-        <Hero onScrollToQuote={scrollToQuote} />
-        <HowItWorks />
-
-        <QuoteGenerator
-          plan={user ? company?.plan : (demoQuoteCount >= 3 ? 'DemoLimit' : 'Guest')}
-          demoQuoteCount={(!user || company?.plan === 'Guest') ? demoQuoteCount : null}
-          onGenerate={handleGenerate}
-          onClear={() => {
-            setQuoteItems([]);
-            setHasGenerated(false);
-            setShowPalletInfo(false);
-          }}
-          onExample={handleExample}
+      {hasGenerated && (
+        <QuoteResult
+          items={quoteItems}
+          total={quoteTotal}
+          company={company || { name: 'Empresa Demo (Vista Previa)', address: 'Dirección Ejemplo 123', whatsapp: '5491112345678', email: 'demo@email.com' }}
+          onUpdateItem={handleUpdateItem}
+          onDownload={handleDownload}
+          showPalletInfo={showPalletInfo}
           isDemo={!user}
         />
+      )}
+    </main>
 
-        {hasGenerated && (
-          <QuoteResult
-            items={quoteItems}
-            total={quoteTotal}
-            company={company || { name: 'Empresa Demo (Vista Previa)', address: 'Dirección Ejemplo 123', whatsapp: '5491112345678', email: 'demo@email.com' }}
-            onUpdateItem={handleUpdateItem}
-            onDownload={handleDownload}
-            showPalletInfo={showPalletInfo}
-            isDemo={!user}
-          />
-        )}
-      </main>
-
-      {showAuthModal && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 3000,
-          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <div style={{ position: 'relative', width: '100%', maxWidth: '450px', margin: '1rem' }}>
-            <button
-              onClick={() => setShowAuthModal(false)}
-              style={{ position: 'absolute', right: '10px', top: '10px', background: 'transparent', border: 'none', cursor: 'pointer', zIndex: 10 }}
-            >
-              <X size={24} color="#64748b" />
-            </button>
-            <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden' }}>
-              {authReason === 'download' && (
-                <div style={{ background: '#fef3c7', padding: '1rem', textAlign: 'center', borderBottom: '1px solid #fcd34d' }}>
-                  <p style={{ color: '#92400e', fontWeight: 'bold', margin: 0 }}>
-                    🔒 Creá tu cuenta para descargar el PDF
-                  </p>
-                </div>
-              )}
-              {authReason === 'limit' && (
-                <div style={{ background: '#e0f2fe', padding: '1rem', textAlign: 'center', borderBottom: '1px solid #bae6fd' }}>
-                  <p style={{ color: '#0369a1', fontWeight: 'bold', margin: 0 }}>
-                    🚀 Alcanzaste el límite gratuito (3 cotizaciones/mes)
-                  </p>
-                  <p style={{ color: '#0369a1', fontSize: '0.9rem', margin: '0.5rem 0 0 0' }}>
-                    Registrate gratis para continuar
-                  </p>
-                </div>
-              )}
-              {authReason === 'generic' && (
-                <div style={{ padding: '1rem', textAlign: 'center', borderBottom: '1px solid #f1f5f9' }}>
-                  <p style={{ fontWeight: 'bold', margin: 0, color: '#334155' }}>
-                    👋 Iniciar Sesión / Registrarse
-                  </p>
-                </div>
-              )}
-              <Login onLogin={() => setShowAuthModal(false)} isModal={true} />
-            </div>
+    {showAuthModal && (
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 3000,
+        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center'
+      }}>
+        <div style={{ position: 'relative', width: '100%', maxWidth: '450px', margin: '1rem' }}>
+          <button
+            onClick={() => setShowAuthModal(false)}
+            style={{ position: 'absolute', right: '10px', top: '10px', background: 'transparent', border: 'none', cursor: 'pointer', zIndex: 10 }}
+          >
+            <X size={24} color="#64748b" />
+          </button>
+          <div style={{ background: 'white', borderRadius: '16px', overflow: 'hidden' }}>
+            {authReason === 'download' && (
+              <div style={{ background: '#fef3c7', padding: '1rem', textAlign: 'center', borderBottom: '1px solid #fcd34d' }}>
+                <p style={{ color: '#92400e', fontWeight: 'bold', margin: 0 }}>
+                  🔒 Creá tu cuenta para descargar el PDF
+                </p>
+              </div>
+            )}
+            {authReason === 'limit' && (
+              <div style={{ background: '#e0f2fe', padding: '1rem', textAlign: 'center', borderBottom: '1px solid #bae6fd' }}>
+                <p style={{ color: '#0369a1', fontWeight: 'bold', margin: 0 }}>
+                  🚀 Alcanzaste el límite gratuito (3 cotizaciones/mes)
+                </p>
+                <p style={{ color: '#0369a1', fontSize: '0.9rem', margin: '0.5rem 0 0 0' }}>
+                  Registrate gratis para continuar
+                </p>
+              </div>
+            )}
+            {authReason === 'generic' && (
+              <div style={{ padding: '1rem', textAlign: 'center', borderBottom: '1px solid #f1f5f9' }}>
+                <p style={{ fontWeight: 'bold', margin: 0, color: '#334155' }}>
+                  👋 Iniciar Sesión / Registrarse
+                </p>
+              </div>
+            )}
+            <Login onLogin={() => setShowAuthModal(false)} isModal={true} />
           </div>
         </div>
-      )}
+      </div>
+    )}
 
-      <LimitReachedModal
-        isOpen={isLimitModalOpen}
-        onClose={() => setIsLimitModalOpen(false)}
-        onUpgrade={handleUpgrade}
-      />
+    <LimitReachedModal
+      isOpen={isLimitModalOpen}
+      onClose={() => setIsLimitModalOpen(false)}
+      onUpgrade={handleUpgrade}
+    />
 
 
-      <ConfigModal
-        isOpen={isConfigOpen}
-        onClose={() => setIsConfigOpen(false)}
-        company={company}
-        setCompany={handleCompanyUpdate}
-        materials={materials}
-        onAddMaterial={handleAddMaterial}
-        onUpdateMaterial={handleMaterialUpdate}
-        plan={company?.plan}
-        onUpgrade={handleUpgrade}
-        initialTab={configTab}
-      />
-    </div>
-  );
+    <ConfigModal
+      isOpen={isConfigOpen}
+      onClose={() => setIsConfigOpen(false)}
+      company={company}
+      setCompany={handleCompanyUpdate}
+      materials={materials}
+      onAddMaterial={handleAddMaterial}
+      onUpdateMaterial={handleMaterialUpdate}
+      plan={company?.plan}
+      onUpgrade={handleUpgrade}
+      initialTab={configTab}
+    />
+  </div>
+);
 }
