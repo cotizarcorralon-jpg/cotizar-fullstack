@@ -45,8 +45,9 @@ export async function POST(req: Request) {
         const data = await mpResponse.json();
 
         if (!mpResponse.ok) {
-            console.error("MP Error:", data);
-            return NextResponse.json({ error: 'Error creating subscription' }, { status: 500 });
+            console.error("MP Error Status:", mpResponse.status);
+            console.error("MP Error Data:", JSON.stringify(data, null, 2));
+            return NextResponse.json({ error: 'Error creating subscription', details: data }, { status: 500 });
         }
 
         // Devolvemos el link de pago generado (init_point)
