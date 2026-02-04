@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 
 const { handlers } = NextAuth({
     trustHost: true,
+    debug: true, // Activar logs detallados en Vercel
+    secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
     adapter: PrismaAdapter(prisma),
     // Configuración de proveedores: Google Auth 
     providers: [
