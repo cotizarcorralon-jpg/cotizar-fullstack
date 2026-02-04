@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -17,6 +18,8 @@ model User {
   sessions      Session[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  
+  company       Company?
 }
 
 model Account {
@@ -53,4 +56,42 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  address   String?
+  whatsapp  String?
+  email     String?
+  website   String?
+  logoUrl   String?
+  pdfTerms  String?
+  plan      String   @default("Guest")
+  
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  materials Material[]
+}
+
+model Material {
+  id        String   @id @default(cuid())
+  name      String
+  unit      String
+  price     Float
+  keywords  String[]
+  
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model Quote {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  content   String?  // Optional: store the text used
+  total     Float?
+  
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }

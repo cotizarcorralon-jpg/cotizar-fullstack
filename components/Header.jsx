@@ -35,7 +35,7 @@ export default function Header({ onOpenConfig, user, plan, onLoginClick }) {
                                 color: plan === 'Profesional' ? '#d97706' : '#64748b',
                                 border: plan === 'Profesional' ? '1px solid #fcd34d' : '1px solid #e2e8f0'
                             }}>
-                                {plan || 'Free'}
+                                {plan === 'Profesional' ? 'PRO' : 'Gratis'}
                             </div>
                         </div>
                     )}

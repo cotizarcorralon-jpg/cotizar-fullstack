@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useSession } from "next-auth/react";
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import HowItWorks from '@/components/HowItWorks';
@@ -76,8 +77,27 @@ export default function Home() {
     }));
   };
 
-  // Load User from Local Storage if available
+  // NextAuth Sync
+  const { data: sessionData, status } = useSession();
+
   useEffect(() => {
+    if (status === 'authenticated' && sessionData?.user) {
+      setUser(sessionData.user);
+      localStorage.setItem('cotizar_user', JSON.stringify(sessionData.user));
+
+      // If we don't have a company for this user, we might want to fetch it or create a default one linked to the user
+      // For now, we keep the existing logic of loading from local storage, or relying on what's there.
+      // Ideally, we should fetch the user's company from the DB here.
+
+      // Sync demo count from storage so we don't show 0/3 if they already used some
+      setDemoQuoteCount(getDemoQuoteCount());
+    }
+  }, [status, sessionData]);
+
+  // Load User from Local Storage if available (Fallback)
+  useEffect(() => {
+    if (status === 'authenticated') return; // Don't overwrite if NextAuth is active
+
     const storedUser = localStorage.getItem('cotizar_user');
     const storedCompany = localStorage.getItem('cotizar_company');
     const storedMaterials = localStorage.getItem('cotizar_materials');
@@ -112,7 +132,7 @@ export default function Home() {
 
       setDemoQuoteCount(getDemoQuoteCount());
     }
-  }, []);
+  }, [status]);
 
   const refreshMaterials = async (companyId: string) => {
     if (companyId === 'local') {
@@ -129,6 +149,7 @@ export default function Home() {
   };
 
   const handleLogin = async (mockUser: any) => {
+    // Legacy mock login function - kept for reference or removal
     try {
       const session = await login(mockUser);
       setUser(session.user);
@@ -179,6 +200,12 @@ export default function Home() {
 
     if (!company) return;
 
+    // Fix: Enforce limit if user was a guest and used their quota
+    if (company.plan === 'Guest' && getDemoQuoteCount() >= 3) {
+      setIsLimitModalOpen(true);
+      return;
+    }
+
     try {
       const result = await generateQuote(text, company.id);
 
@@ -186,6 +213,13 @@ export default function Home() {
       setQuoteTotal(result.total);
       setShowPalletInfo(result.hasPallets || false);
       setHasGenerated(true);
+
+      // Increment local counter for logged-in Guests
+      if (company.plan === 'Guest') {
+        const newCount = getDemoQuoteCount() + 1;
+        setDemoQuoteCount(newCount);
+        setDemoQuoteCountStorage(newCount);
+      }
 
       setTimeout(() => {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -269,16 +303,8 @@ export default function Home() {
     }
   };
 
-  const handleUpgrade = async () => {
-    try {
-      await upgradeSubscription(company.id);
-      const newComp = { ...company, plan: 'Profesional' };
-      setCompany(newComp);
-      localStorage.setItem('cotizar_company', JSON.stringify(newComp));
-      alert("¡Plan Profesional activado!");
-    } catch (e) {
-      alert("Error activando plan");
-    }
+  const handleUpgrade = () => {
+    window.open('https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=f03e1a6abedd4f1fba4947305b598264', '_blank');
   };
 
   return (
@@ -296,7 +322,7 @@ export default function Home() {
 
         <QuoteGenerator
           plan={user ? company?.plan : (demoQuoteCount >= 3 ? 'DemoLimit' : 'Guest')}
-          demoQuoteCount={user ? null : demoQuoteCount}
+          demoQuoteCount={(!user || company?.plan === 'Guest') ? demoQuoteCount : null}
           onGenerate={handleGenerate}
           onClear={() => {
             setQuoteItems([]);
@@ -358,7 +384,7 @@ export default function Home() {
                   </p>
                 </div>
               )}
-              <Login onLogin={() => handleLogin(undefined)} isModal={true} />
+              <Login onLogin={() => setShowAuthModal(false)} isModal={true} />
             </div>
           </div>
         </div>
@@ -367,6 +393,7 @@ export default function Home() {
       <LimitReachedModal
         isOpen={isLimitModalOpen}
         onClose={() => setIsLimitModalOpen(false)}
+        onUpgrade={handleUpgrade}
       />
 
 
