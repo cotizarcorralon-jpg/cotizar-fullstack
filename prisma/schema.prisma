@@ -73,6 +73,7 @@ model Company {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   materials Material[]
+  quotes    Quote[]
 }
 
 model Material {
