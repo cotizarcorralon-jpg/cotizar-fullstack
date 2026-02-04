@@ -12,7 +12,7 @@ import ConfigModal from '@/components/ConfigModal';
 import Login from '@/components/Login';
 import LimitReachedModal from '@/components/LimitReachedModal';
 
-import { login, generateQuote, getMaterials, addMaterial, updateMaterial, updateCompany, upgradeSubscription } from '@/lib/api';
+import { login, generateQuote, getMaterials, addMaterial, updateMaterial, updateCompany, upgradeSubscription, createCheckoutSession } from '@/lib/api';
 import { generatePDF } from '@/lib/pdfGenerator';
 import { parseMessage } from '@/lib/parsingLogic';
 
@@ -303,8 +303,24 @@ export default function Home() {
     }
   };
 
-  const handleUpgrade = () => {
-    window.open('https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=f03e1a6abedd4f1fba4947305b598264', '_blank');
+
+  const handleUpgrade = async () => {
+    if (!company?.id) {
+      alert("Error: No se encontró el ID de usuario.");
+      return;
+    }
+
+    try {
+      const response = await createCheckoutSession(company.id);
+      if (response.url) {
+        window.location.href = response.url; // Redirigir al usuario al link inteligente
+      } else {
+        alert("Error generando el link de pago.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error iniciando el pago. Intenta nuevamente.");
+    }
   };
 
   return (
