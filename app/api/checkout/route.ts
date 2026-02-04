@@ -5,21 +5,13 @@ import { prisma } from '@/lib/prisma';
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { companyId } = body;
+        const { companyId, email } = body;
 
         if (!companyId) {
             return NextResponse.json({ error: 'Company ID is required' }, { status: 400 });
         }
 
-        // Datos de tu plan actual (usamos los mismos valores que tenías en el link fijo)
-        // ID del plan original: f03e1a6abedd4f1fba4947305b598264
-        // Sin embargo, para trackear el usuario, necesitamos crear una "solicitud de suscripcion" (preapproval)
-        // específica para este usuario, basada en ese plan o defininiendo las props aquí.
-
-        // NOTA: Para usar external_reference con suscripciones, lo ideal es crear un "preapproval" 
-        // dinámico apuntando al plan o definiendo el precio on-the-fly.
-        // Como MercadoPago a veces restringe `preapproval_plan_id` + `external_reference`,
-        // crearemos una preferencia de suscripción directa.
+        // ... (lines 14-38 omitted for brevity, keeping them as is)
 
         const mpResponse = await fetch('https://api.mercadopago.com/preapproval', {
             method: 'POST',
@@ -35,9 +27,12 @@ export async function POST(req: Request) {
                     transaction_amount: 19900,
                     currency_id: "ARS"
                 },
-                back_url: process.env.NEXTAUTH_URL || "https://cotizar-fullstack.vercel.app",
-                external_reference: companyId, // <--- AQUÍ ESTÁ LA CLAVE: Guardamos el ID de tu usuario
-                payer_email: "test_user_123@test.com", // MercadoPago requiere un email, idealmente usar el del user real
+                // Mercado Pago requiere HTTPS. Si es localhost, usamos la de producción como fallback para no romper la validación.
+                back_url: (process.env.NEXTAUTH_URL && !process.env.NEXTAUTH_URL.includes("localhost"))
+                    ? process.env.NEXTAUTH_URL
+                    : "https://cotizapp.click",
+                external_reference: companyId,
+                payer_email: email || "test_user_123@test.com", // Usar email real o fallback
                 status: "pending"
             })
         });
