@@ -12,7 +12,7 @@ import ConfigModal from '@/components/ConfigModal';
 import Login from '@/components/Login';
 import LimitReachedModal from '@/components/LimitReachedModal';
 
-import { login, generateQuote, getMaterials, addMaterial, updateMaterial, updateCompany, upgradeSubscription, createCheckoutSession } from '@/lib/api';
+import { login, generateQuote, getMaterials, addMaterial, updateMaterial, updateCompany, upgradeSubscription, createCheckoutSession, getOrCreateCompany } from '@/lib/api';
 import { generatePDF } from '@/lib/pdfGenerator';
 import { parseMessage } from '@/lib/parsingLogic';
 
@@ -125,7 +125,17 @@ export default function Home() {
 
         if (storedUser && storedUser !== "undefined") {
           try {
-            setUser(JSON.parse(storedUser));
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+
+            // Fetch real company from DB to ensure valid payments
+            getOrCreateCompany(parsedUser.id).then(dbCompany => {
+              if (dbCompany && dbCompany.id) {
+                setCompany(dbCompany);
+                localStorage.setItem('cotizar_company', JSON.stringify(dbCompany));
+                refreshMaterials(dbCompany.id);
+              }
+            });
           } catch (e) {
             console.error("Error parsing user", e);
             localStorage.removeItem('cotizar_user');
@@ -333,7 +343,9 @@ export default function Home() {
     }
 
     try {
-      const response = await createCheckoutSession(company.id);
+      // Pass the user email (from company or user object) to pre-fill checkout
+      const emailToUse = company.email || user?.email;
+      const response = await createCheckoutSession(company.id, emailToUse);
       if (response.url) {
         window.location.href = response.url; // Redirigir al usuario al link inteligente
       } else {

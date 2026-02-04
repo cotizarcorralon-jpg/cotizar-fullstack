@@ -35,7 +35,7 @@ export async function POST(req: Request) {
                     transaction_amount: 19900,
                     currency_id: "ARS"
                 },
-                back_url: "https://cotizar-fullstack.vercel.app", // O tu localhost para pruebas
+                back_url: process.env.NEXTAUTH_URL || "https://cotizar-fullstack.vercel.app",
                 external_reference: companyId, // <--- AQUÍ ESTÁ LA CLAVE: Guardamos el ID de tu usuario
                 payer_email: "test_user_123@test.com", // MercadoPago requiere un email, idealmente usar el del user real
                 status: "pending"

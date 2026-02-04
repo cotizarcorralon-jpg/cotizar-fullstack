@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 const { handlers } = NextAuth({
     adapter: PrismaAdapter(prisma),
+    // Configuración de proveedores: Google Auth 
     providers: [
         Google({
             clientId: process.env.GOOGLE_CLIENT_ID!,
