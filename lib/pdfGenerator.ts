@@ -25,6 +25,27 @@ export function generatePDF(
     total: number,
     quoteNumber?: string
 ) {
+    const fileName = quoteNumber ? `cotizacion_${quoteNumber}.pdf` : `cotizacion_${Date.now()}.pdf`;
+    const doc = createDoc(company, items, total, quoteNumber);
+    doc.save(fileName);
+}
+
+export function getPDFBlobUrl(
+    company: Company,
+    items: QuoteItem[],
+    total: number,
+    quoteNumber?: string
+): string {
+    const doc = createDoc(company, items, total, quoteNumber);
+    return doc.output('bloburl') as unknown as string;
+}
+
+function createDoc(
+    company: Company,
+    items: QuoteItem[],
+    total: number,
+    quoteNumber?: string
+) {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
     const marginLeft = 15;
@@ -138,17 +159,8 @@ export function generatePDF(
     const terms = (company as any).terms || company.pdfTerms || 'Presupuesto válido por 7 días. Flete NO incluido.';
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    // Center alignment requires manually calculating X or using 'align: center' option?
-    // doc.text supports options since recent versions. 'splitTextToSize' is useful but 'text' with align handles multi-line?
-    // splitTextToSize returns array of strings. We can center each line.
-
-    // Simpler: Just rely on splitTextToSize + loop or use { align: 'center', maxWidth: ... } if supported.
-    // jsPDF text() supports maxWidth and align in recent versions.
-    // Let's use the layout similar to above (centered).
 
     doc.text(terms, pageWidth / 2, yPos, { align: 'center', maxWidth: pageWidth - marginLeft - marginRight });
 
-    // Download
-    const fileName = quoteNumber ? `cotizacion_${quoteNumber}.pdf` : `cotizacion_${Date.now()}.pdf`;
-    doc.save(fileName);
+    return doc;
 }

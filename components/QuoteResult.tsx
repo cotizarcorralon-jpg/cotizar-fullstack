@@ -39,7 +39,15 @@ export default function QuoteResult(props: QuoteResultProps) {
     isDemo
   } = props;
 
+  const { company } = props;
+
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+
   if (!items || items.length === 0) return null;
+
+  // ... (rest of code until preview button)
+
+
 
   return (
     <section style={{ padding: '0 0 60px 0' }}>
@@ -226,12 +234,56 @@ export default function QuoteResult(props: QuoteResultProps) {
             </table>
           </div>
 
-          <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
+          <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem', alignItems: 'center' }}>
+            {/* Preview Button */}
+            <button
+              className="btn btn-secondary"
+              onClick={async () => {
+                // Lazy load generator
+                const { getPDFBlobUrl } = await import('@/lib/pdfGenerator');
+
+                // Helper map for strict typing match
+                const pdfItems = items.map(i => ({
+                  name: i.name,
+                  quantity: i.quantity,
+                  unit: i.unit,
+                  unitPrice: i.price,
+                  subtotal: i.subtotal
+                }));
+
+                const url = getPDFBlobUrl(
+                  // Ensure we pass minimal defaults if company is missing or name is undefined
+                  { ...({ name: 'Mi Empresa' }), ...(company || {}) } as any,
+                  pdfItems,
+                  total
+                );
+                setPreviewUrl(String(url));
+              }}
+              style={{ padding: '0.8rem 1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}
+            >
+              👁️ Ver Vista Previa
+            </button>
+
             <button className="btn btn-primary" onClick={onDownload} style={{ padding: '1rem 2rem' }}>
               <Download size={20} />
               Descargar PDF
             </button>
           </div>
+
+          {/* PDF Preview Area */}
+          {previewUrl && (
+            <div style={{ marginTop: '2rem', borderTop: '2px solid var(--border)', paddingTop: '2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h4 style={{ margin: 0 }}>Vista Previa del PDF</h4>
+                <button onClick={() => setPreviewUrl(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666' }}>❌ Cerrar</button>
+              </div>
+              <iframe
+                src={previewUrl}
+                style={{ width: '100%', height: '600px', border: '1px solid #ddd', borderRadius: '8px' }}
+                title="Vista Previa PDF"
+              />
+            </div>
+          )}
         </div>
       </div>
     </section>
