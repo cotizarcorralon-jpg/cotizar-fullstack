@@ -30,7 +30,7 @@ export async function POST(req: Request) {
             const CACHE_LIMIT = 5; // IP Limit per 24h
             const startOfDay = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24h ago
 
-            const usageCount = await prisma.usageLog.count({
+            const usageCount = await (prisma as any).usageLog.count({
                 where: {
                     ip: ip,
                     createdAt: { gte: startOfDay },
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
             }
 
             // Log usage
-            await prisma.usageLog.create({
+            await (prisma as any).usageLog.create({
                 data: {
                     ip: ip,
                     action: 'GENERATE_QUOTE'
