@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useState } from 'react';
-import { X, Plus, Search, Check, CreditCard } from 'lucide-react';
+import { X, Plus, Search, Check } from 'lucide-react';
 
 export default function ConfigModal({
     isOpen, onClose,
@@ -305,7 +307,6 @@ export default function ConfigModal({
                                                     className="btn btn-primary"
                                                     style={{ width: '100%', justifyContent: 'center', marginBottom: '1rem' }}
                                                 >
-                                                    <CreditCard size={18} />
                                                     Suscribirme al Plan Ilimitado
                                                 </button>
 
