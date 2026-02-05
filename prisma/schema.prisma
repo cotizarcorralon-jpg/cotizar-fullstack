@@ -95,3 +95,12 @@ model Quote {
   companyId String
   company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
+
+model UsageLog {
+  id        String   @id @default(cuid())
+  ip        String
+  action    String   // e.g. "GENERATE_QUOTE"
+  createdAt DateTime @default(now())
+
+  @@index([ip, createdAt])
+}

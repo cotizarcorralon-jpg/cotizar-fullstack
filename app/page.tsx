@@ -14,7 +14,6 @@ import LimitReachedModal from '@/components/LimitReachedModal';
 
 import { login, generateQuote, getMaterials, addMaterial, updateMaterial, updateCompany, upgradeSubscription, createCheckoutSession, getOrCreateCompany } from '@/lib/api';
 import { generatePDF } from '@/lib/pdfGenerator';
-import { parseMessage } from '@/lib/parsingLogic';
 
 // Default materials for localStorage-only users
 const DEFAULT_MATERIALS = [
@@ -210,6 +209,12 @@ export default function Home() {
   };
 
   const handleGenerate = async (text: string) => {
+    // Determine the company ID to use. 
+    // If user is logged in, use their company ID.
+    // If user is NOT logged in (Demo), pass null/undefined to let API handle it as Guest/Demo.
+    const companyId = user ? company?.id : null;
+
+    // Check local demo limit first for immediate feedback (UX)
     if (!user) {
       const currentCount = getDemoQuoteCount();
       if (currentCount >= 3) {
@@ -217,46 +222,23 @@ export default function Home() {
         setShowAuthModal(true);
         return;
       }
-      try {
-        const items = parseMessage(text, materials);
-        const total = items.reduce((acc: number, item: any) => acc + item.subtotal, 0);
-
-        setQuoteItems(items);
-        setQuoteTotal(total);
-        setShowPalletInfo((items as any).hasPallets || false);
-        setHasGenerated(true);
-
-        const newCount = currentCount + 1;
-        setDemoQuoteCount(newCount);
-        setDemoQuoteCountStorage(newCount);
-
-        setTimeout(() => {
-          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        }, 100);
-      } catch (err: any) {
-        alert("Error: " + err.message);
-      }
-      return;
-    }
-
-    if (!company) return;
-
-    // Fix: Enforce limit if user was a guest and used their quota
-    if (company.plan === 'Guest' && getDemoQuoteCount() >= 3) {
+    } else if (company?.plan === 'Guest' && getDemoQuoteCount() >= 3) {
+      // Logged in Guest Check
       setIsLimitModalOpen(true);
       return;
     }
 
     try {
-      const result = await generateQuote(text, company.id);
+      // Call API for ALL users (Demo & Logged In) to enforce IP limits
+      const result = await generateQuote(text, companyId || undefined);
 
       setQuoteItems(result.items);
       setQuoteTotal(result.total);
       setShowPalletInfo(result.hasPallets || false);
       setHasGenerated(true);
 
-      // Increment local counter for logged-in Guests
-      if (company.plan === 'Guest') {
+      // Increment local counters for UI feedback
+      if (!user || (company?.plan === 'Guest')) {
         const newCount = getDemoQuoteCount() + 1;
         setDemoQuoteCount(newCount);
         setDemoQuoteCountStorage(newCount);
@@ -267,8 +249,13 @@ export default function Home() {
       }, 100);
 
     } catch (err: any) {
-      if (err.code === 'LIMIT_REACHED') {
-        setIsLimitModalOpen(true);
+      if (err.message.includes('Límite diario') || err.code === 'LIMIT_REACHED' || err.status === 429) {
+        if (!user) {
+          setAuthReason('limit');
+          setShowAuthModal(true);
+        } else {
+          setIsLimitModalOpen(true);
+        }
       } else {
         alert("Error generando presupuesto: " + err.message);
       }
@@ -392,7 +379,7 @@ export default function Home() {
           const { checkSubscriptionStatus } = await import('@/lib/api');
 
           // Pass the timestamp to ensure we don't pick up old subscriptions from previous tests
-          const status = await checkSubscriptionStatus(company.id, paymentStartTime ? Number(paymentStartTime) : null);
+          const status = await checkSubscriptionStatus(company.id, (paymentStartTime ? Number(paymentStartTime) : null) as any);
 
           if (status.active) {
             alert("¡Pago confirmado! Tu cuenta ahora es PRO.");
