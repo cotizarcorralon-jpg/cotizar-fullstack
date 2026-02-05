@@ -66,8 +66,7 @@ export default function ConfigModal({
             backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}>
-            <div className="card" style={{
-                width: '90%', maxWidth: '900px', height: '85vh',
+            <div className="card config-card" style={{
                 display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden'
             }}>
 
@@ -81,11 +80,26 @@ export default function ConfigModal({
                 </div>
 
                 {/* Content Container */}
-                <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+                <div className="config-content" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
                     {/* Sidebar */}
-                    <aside style={{ width: '250px', borderRight: '1px solid var(--border)', background: '#f8fafc', padding: '1rem' }}>
-                        <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <aside className="config-sidebar" style={{ background: '#f8fafc', padding: '1rem' }}>
+                        {/* Mobile Dropdown */}
+                        <div className="mobile-only-nav">
+                            <select
+                                value={activeTab}
+                                onChange={(e) => setActiveTab(e.target.value)}
+                                className="input"
+                                style={{ marginBottom: '1rem' }}
+                            >
+                                <option value="company">Empresa</option>
+                                <option value="materials">Materiales y Precios</option>
+                                <option value="plan">Mi Plan</option>
+                            </select>
+                        </div>
+
+                        {/* Desktop Nav */}
+                        <nav className="desktop-only-nav" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                             <button
                                 onClick={() => setActiveTab('company')}
                                 className={`btn ${activeTab === 'company' ? 'btn-primary' : 'btn-ghost'}`}
@@ -108,7 +122,7 @@ export default function ConfigModal({
                     </aside>
 
                     {/* Main Content */}
-                    <main style={{ flex: 1, overflowY: 'auto', padding: '2rem' }}>
+                    <main className="config-main" style={{ flex: 1, overflowY: 'auto', padding: '2rem' }}>
 
                         {activeTab === 'company' && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '600px' }}>
@@ -165,7 +179,7 @@ export default function ConfigModal({
                                 </div>
 
                                 {/* Add New */}
-                                <div style={{ background: '#f1f5f9', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: '0.5rem', alignItems: 'end' }}>
+                                <div className="new-material-grid" style={{ background: '#f1f5f9', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', gap: '0.5rem', alignItems: 'end' }}>
                                     <label>
                                         <span style={{ fontSize: '0.8rem' }}>Nombre</span>
                                         <input className="input" placeholder="Ej: Ladrillo hueco" value={newMaterial.name} onChange={e => setNewMaterial({ ...newMaterial, name: e.target.value })} />
@@ -184,7 +198,7 @@ export default function ConfigModal({
                                 {/* List */}
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                                     {filteredMaterials.map(mat => (
-                                        <div key={mat.id} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '1rem', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '6px', alignItems: 'center' }}>
+                                        <div key={mat.id} className="material-item-grid" style={{ gap: '1rem', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '6px', alignItems: 'center' }}>
                                             <input className="input" value={mat.name} onChange={e => handleUpdateMat(mat.id, 'name', e.target.value)} />
                                             <input className="input" value={mat.unit} onChange={e => handleUpdateMat(mat.id, 'unit', e.target.value)} />
                                             <div style={{ position: 'relative' }}>

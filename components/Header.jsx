@@ -17,9 +17,9 @@ export default function Header({ onOpenConfig, user, plan, onLoginClick }) {
             alignItems: 'center'
         }}>
             <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: '100%' }}>
-                <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', height: '100%', paddingLeft: '4px' }}>
                     <a href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-                        <span style={{ fontFamily: 'var(--font-sans)', fontSize: '1.75rem', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.03em', lineHeight: 1 }}>
+                        <span className="logo-text" style={{ fontFamily: 'var(--font-sans)', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.03em', lineHeight: 1 }}>
                             Cotiz<span style={{ color: 'var(--primary)' }}>App</span>
                         </span>
                     </a>
@@ -28,7 +28,7 @@ export default function Header({ onOpenConfig, user, plan, onLoginClick }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     {user && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: '1rem' }}>
-                            <div style={{ textAlign: 'right', fontSize: '0.85rem' }}>
+                            <div className="hidden-mobile" style={{ textAlign: 'right', fontSize: '0.85rem' }}>
                                 <div className="text-truncate" style={{ fontWeight: '500', color: '#334155' }}>{user.email}</div>
                             </div>
                             <div style={{
