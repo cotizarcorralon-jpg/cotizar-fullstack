@@ -89,11 +89,18 @@ model Material {
 model Quote {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-  content   String?  // Optional: store the text used
+  
+  // Content & Analytics
+  rawMessage String?  @db.Text // The exact WhatsApp message
+  parsedResult Json?  // storing the array of items detected
   total     Float?
   
-  companyId String
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  // User Context 
+  userEmail String?   // Snapshot of email for easy analytics
+  
+  // Relations
+  companyId String?
+  company   Company?  @relation(fields: [companyId], references: [id], onDelete: SetNull)
 }
 
 model UsageLog {
@@ -101,6 +108,10 @@ model UsageLog {
   ip        String
   action    String   // e.g. "GENERATE_QUOTE"
   createdAt DateTime @default(now())
+  
+  // Optional linkage to user context
+  companyId String?
+  metadata  Json?    // Store extra info if needed
 
   @@index([ip, createdAt])
 }

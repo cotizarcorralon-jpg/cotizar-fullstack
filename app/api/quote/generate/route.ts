@@ -83,6 +83,53 @@ export async function POST(req: Request) {
         // 5. Check for pallet
         const hasPallets = (items as any).hasPallets || items.some((i: any) => i.name.includes('pallet'));
 
+
+        // --- LOGGING & ANALYTICS ---
+
+        // Fetch extra company info if available (email)
+        let userEmail = null;
+        if (dbCompany) {
+            // Need to fetch email if we didn't before. 
+            // We selected {id, plan}. Let's assume we can get email from dbCompany if we update the query above or just re-fetch is unlikely needed if we just update the initial fetch.
+            // Let's rely on a separate quick fetch or update the top fetch.
+            // Actually, let's just save the quote.
+            const fullComp = await prisma.company.findUnique({
+                where: { id: dbCompany.id },
+                select: { email: true, user: { select: { email: true } } }
+            });
+            userEmail = fullComp?.email || fullComp?.user?.email;
+        }
+
+        // Save the Quote for Analytics (ALL users, including demo)
+        try {
+            await (prisma as any).quote.create({
+                data: {
+                    rawMessage: text,
+                    parsedResult: items as any, // Cast to Json
+                    total: total,
+                    userEmail: userEmail,
+                    // Connect company ONLY if it exists in DB (not 'local')
+                    company: dbCompany ? { connect: { id: dbCompany.id } } : undefined
+                }
+            });
+        } catch (logError) {
+            console.error("Failed to log quote:", logError);
+            // Don't fail the request just because logging failed
+        }
+
+        // Log Usage (if not pro, or just log everything for analytics?)
+        // The user asked to "save all messages... for analytics".
+        // The rate limit check specifically logs "Non-Pro".
+        // Let's update the rate limit log to include metadata OR create a new log entry if it wasn't created.
+        // Actually, we already created a usageLog above for rate limiting purposes.
+        // Let's update that log entry (if we had the ID) or just let it be. 
+        // Simpler: The `Quote` table is now the primary source for "what messages/writing styles they use".
+        // The `UsageLog` is mainly for rate limiting. 
+        // However, we should add companyId to UsageLog if we can.
+
+        // We already created the UsageLog earlier for rate limiting.
+        // Let's just leave UsageLog for rate limiting (lightweight) and Quote for content analytics (heavyweight).
+
         return NextResponse.json({
             items,
             total,
