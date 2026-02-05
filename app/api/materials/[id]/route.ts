@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         // Here 'id' is treated as CompanyId because lib/api.js calls getMaterials(companyId)
-        const companyId = params.id;
+        const { id: companyId } = await params;
 
         const materials = await prisma.material.findMany({
             where: { companyId },
@@ -18,10 +18,10 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         // Here 'id' is treated as MaterialId because lib/api.js calls updateMaterial(id, data)
-        const materialId = params.id;
+        const { id: materialId } = await params;
         const body = await req.json();
 
         const updated = await prisma.material.update({
