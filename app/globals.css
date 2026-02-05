@@ -168,16 +168,3 @@ a {
         max-width: 300px;
     }
 }
-
-.header-logo {
-    height: 60px;
-    width: auto;
-    object-fit: contain;
-}
-
-@media (max-width: 640px) {
-    .header-logo {
-        height: 50px;
-        max-width: 150px;
-    }
-}

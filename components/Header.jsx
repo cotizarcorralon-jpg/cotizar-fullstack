@@ -18,7 +18,11 @@ export default function Header({ onOpenConfig, user, plan, onLoginClick }) {
         }}>
             <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: '100%' }}>
                 <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-                    <img src="/logo.png" alt="CotizAPP" className="header-logo" />
+                    <a href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+                        <span style={{ fontFamily: 'var(--font-sans)', fontSize: '1.75rem', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.03em', lineHeight: 1 }}>
+                            Cotiz<span style={{ color: 'var(--primary)' }}>App</span>
+                        </span>
+                    </a>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
