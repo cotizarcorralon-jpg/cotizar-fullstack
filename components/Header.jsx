@@ -18,14 +18,14 @@ export default function Header({ onOpenConfig, user, plan, onLoginClick }) {
         }}>
             <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: '100%' }}>
                 <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-                    <img src="/logo.png" alt="CotizAPP" style={{ height: '150px', width: 'auto', objectFit: 'contain' }} />
+                    <img src="/logo.png" alt="CotizAPP" className="header-logo" />
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     {user && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: '1rem' }}>
                             <div style={{ textAlign: 'right', fontSize: '0.85rem' }}>
-                                <div style={{ fontWeight: '500', color: '#334155' }}>{user.email}</div>
+                                <div className="text-truncate" style={{ fontWeight: '500', color: '#334155' }}>{user.email}</div>
                             </div>
                             <div style={{
                                 fontSize: '0.7rem', fontWeight: 'bold',

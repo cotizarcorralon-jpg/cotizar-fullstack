@@ -145,3 +145,39 @@ a {
     background-color: #f1f5f9;
     color: #475569;
 }
+
+@media (max-width: 640px) {
+    .hidden-mobile {
+        display: none !important;
+    }
+
+    .container {
+        padding: 0 0.5rem;
+    }
+}
+
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+
+@media (min-width: 641px) {
+    .text-truncate {
+        max-width: 300px;
+    }
+}
+
+.header-logo {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+}
+
+@media (max-width: 640px) {
+    .header-logo {
+        height: 50px;
+        max-width: 150px;
+    }
+}
