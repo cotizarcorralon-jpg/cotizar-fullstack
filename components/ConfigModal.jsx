@@ -44,7 +44,37 @@ export default function ConfigModal({
     if (!isOpen) return null;
 
     // -- Handlers --
-    // ... [existing handlers stay same, no change needed before return] ...
+    const handleLogoUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (ev) => setLocalCompany({ ...localCompany, logo: ev.target.result });
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleUpdateMat = (id, field, value) => {
+        // Find current material to get full object for update
+        const current = materials.find(m => m.id === id);
+        if (current) {
+            onUpdateMaterial(id, { ...current, [field]: value });
+        }
+    };
+
+    const handleAddMat = () => {
+        if (!newMaterial.name) return;
+        onAddMaterial({
+            name: newMaterial.name,
+            unit: newMaterial.unit || 'u',
+            price: parseFloat(newMaterial.price) || 0,
+            keywords: [newMaterial.name.toLowerCase()]
+        });
+        setNewMaterial({ name: '', unit: '', price: '' });
+    };
+
+    const filteredMaterials = (materials || []).filter(m =>
+        m.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <>
