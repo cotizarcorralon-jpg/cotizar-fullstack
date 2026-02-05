@@ -34,7 +34,7 @@ export async function GET(req: Request) {
                     userId: userId,
                     name: 'Mi Empresa',
                     address: 'Dirección a configurar',
-                    email: '',
+                    email: '', // Empty by default, user must configure it
                     plan: 'Guest',
                     materials: {
                         create: defaultMaterials

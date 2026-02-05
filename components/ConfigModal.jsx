@@ -233,7 +233,15 @@ export default function ConfigModal({
                                             </li>
                                             <li style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                                                 <Check size={18} color={plan === 'Profesional' ? 'green' : '#3b82f6'} />
-                                                {plan === 'Profesional' ? 'Soporte prioritario' : 'Configuración completa'}
+                                                {plan === 'Profesional' ? 'Carga tus propios productos' : 'Configuración básica'}
+                                            </li>
+                                            <li style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                                <Check size={18} color={plan === 'Profesional' ? 'green' : '#3b82f6'} />
+                                                {plan === 'Profesional' ? 'Subí la información de tu empresa' : 'Sin posibilidad de agregar productos'}
+                                            </li>
+                                            <li style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                                <Check size={18} color={plan === 'Profesional' ? 'green' : '#3b82f6'} />
+                                                {plan === 'Profesional' ? 'Soporte prioritario' : 'Soporte estándar'}
                                             </li>
                                         </ul>
                                     </div>
