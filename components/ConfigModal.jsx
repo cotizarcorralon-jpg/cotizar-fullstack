@@ -15,12 +15,14 @@ export default function ConfigModal({
 
     // Local state for company form to avoid auto-saving on every keystroke
     const [localCompany, setLocalCompany] = useState(company || {});
+    const [saveStatus, setSaveStatus] = useState('idle'); // 'idle', 'saving', 'success'
 
     // Sync tab when opening & sync local company data
     React.useEffect(() => {
         if (isOpen) {
             if (initialTab) setActiveTab(initialTab);
             setLocalCompany(company || {});
+            setSaveStatus('idle');
         }
     }, [isOpen, initialTab, company]);
 
@@ -186,17 +188,40 @@ export default function ConfigModal({
                                     />
                                 </label>
 
-                                <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+                                <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', position: 'relative' }}>
+                                    {saveStatus === 'success' && (
+                                        <div style={{
+                                            position: 'absolute', top: '-40px', right: '0',
+                                            backgroundColor: '#dcfce7', color: '#166534',
+                                            padding: '0.5rem 1rem', borderRadius: '20px',
+                                            fontSize: '0.9rem', fontWeight: 'bold',
+                                            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                                            animation: 'fadeInOut 2s forwards',
+                                            display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                            zIndex: 10
+                                        }}>
+                                            <Check size={16} /> Guardado correctamente
+                                        </div>
+                                    )}
                                     <button
                                         className="btn btn-primary"
-                                        onClick={() => {
-                                            if (window.confirm("¿Guardar cambios de la empresa?")) {
-                                                setCompany(localCompany);
+                                        disabled={saveStatus === 'saving'}
+                                        onClick={async () => {
+                                            setSaveStatus('saving');
+                                            try {
+                                                // We await the parent update which calls the API
+                                                await setCompany(localCompany);
+                                                setSaveStatus('success');
+                                                setTimeout(() => setSaveStatus('idle'), 3000);
+                                            } catch (e) {
+                                                console.error(e);
+                                                setSaveStatus('idle');
+                                                alert("Error al guardar");
                                             }
                                         }}
                                         style={{ width: '100%', justifyContent: 'center' }}
                                     >
-                                        💾 Guardar Cambios
+                                        {saveStatus === 'saving' ? 'Guardando...' : '💾 Guardar Cambios'}
                                     </button>
                                 </div>
                             </div>
