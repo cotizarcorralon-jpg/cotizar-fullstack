@@ -360,8 +360,9 @@ export default function Home() {
     }
 
     try {
-      // Set flag to check status on return
+      // Set flag to check status on return, AND timestamp to filter old subs
       sessionStorage.setItem('pending_upgrade_check', 'true');
+      sessionStorage.setItem('payment_start_time', Date.now().toString());
 
       // Pass the user email (from company or user object) to pre-fill checkout
       const emailToUse = company.email || user?.email;
@@ -381,18 +382,28 @@ export default function Home() {
   useEffect(() => {
     const checkUpgrade = async () => {
       const isPending = sessionStorage.getItem('pending_upgrade_check');
+      const paymentStartTime = sessionStorage.getItem('payment_start_time');
+
       if (isPending && company?.id && company.id !== 'local' && company.plan !== 'Profesional') {
         try {
           // Import dynamically or use the prop if passed, but here we can just fetch or import
           // For now we assume imports are available or we use the passed prop logic. 
           // We need to import checkSubscriptionStatus. I'll add it to imports above.
           const { checkSubscriptionStatus } = await import('@/lib/api');
-          const status = await checkSubscriptionStatus(company.id);
+
+          // Pass the timestamp to ensure we don't pick up old subscriptions from previous tests
+          const status = await checkSubscriptionStatus(company.id, paymentStartTime ? Number(paymentStartTime) : null);
 
           if (status.active) {
             alert("¡Pago confirmado! Tu cuenta ahora es PRO.");
             sessionStorage.removeItem('pending_upgrade_check');
+            sessionStorage.removeItem('payment_start_time');
             window.location.reload(); // Reload to refresh everything
+          } else {
+            // Optional: If check runs and returns false, we might want to clear the pending flag 
+            // to avoid repeated checks, OR keep it if we expect latency.
+            // For now, let's keep it but maybe log it.
+            console.log("Pago no detectado aún.");
           }
         } catch (e) {
           console.error("Error checking status", e);

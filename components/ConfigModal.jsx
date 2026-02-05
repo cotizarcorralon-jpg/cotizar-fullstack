@@ -353,9 +353,13 @@ export default function ConfigModal({
                                                         onClick={async () => {
                                                             try {
                                                                 const { checkSubscriptionStatus } = await import('@/lib/api');
-                                                                const status = await checkSubscriptionStatus(company.id);
+                                                                const paymentStartTime = sessionStorage.getItem('payment_start_time');
+                                                                // Pass timestamp to ensure robust check for recent payment
+                                                                const status = await checkSubscriptionStatus(company.id, paymentStartTime ? Number(paymentStartTime) : null);
+
                                                                 if (status.active) {
                                                                     alert('¡Pago confirmado! Tu cuenta ahora es PRO. Recargando...');
+                                                                    sessionStorage.removeItem('payment_start_time'); // Clean up on success
                                                                     window.location.reload();
                                                                 } else {
                                                                     setShowSupportModal(true);
