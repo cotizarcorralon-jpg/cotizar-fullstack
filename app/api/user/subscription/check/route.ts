@@ -29,20 +29,25 @@ export async function POST(req: Request) {
         const data = await mpResponse.json();
 
         if (mpResponse.ok && data.results && data.results.length > 0) {
-            // Encontramos una suscripción activa
-            console.log("Suscripción activa encontrada en MP para:", companyId);
+            // Filter strictly for authorized status in case the search param was loose
+            const activeSub = data.results.find((sub: any) => sub.status === 'authorized');
 
-            // Actualizamos la DB por si el webhook falló
-            const updatedCompany = await prisma.company.update({
-                where: { id: companyId },
-                data: { plan: 'Profesional' }
-            });
+            if (activeSub) {
+                // Encontramos una suscripción activa y autorizada
+                console.log("Suscripción activa encontrada en MP para:", companyId);
 
-            return NextResponse.json({
-                active: true,
-                company: updatedCompany,
-                subscription: data.results[0]
-            });
+                // Actualizamos la DB por si el webhook falló
+                const updatedCompany = await prisma.company.update({
+                    where: { id: companyId },
+                    data: { plan: 'Profesional' }
+                });
+
+                return NextResponse.json({
+                    active: true,
+                    company: updatedCompany,
+                    subscription: activeSub
+                });
+            }
         }
 
         return NextResponse.json({ active: false });
