@@ -13,26 +13,26 @@ export default function ConfigModal({
     const [searchTerm, setSearchTerm] = useState('');
     const [newMaterial, setNewMaterial] = useState({ name: '', unit: '', price: '' });
 
-    // Sync tab when opening
+    // Local state for company form to avoid auto-saving on every keystroke
+    const [localCompany, setLocalCompany] = useState(company || {});
+
+    // Sync tab when opening & sync local company data
     React.useEffect(() => {
-        if (isOpen && initialTab) {
-            setActiveTab(initialTab);
+        if (isOpen) {
+            if (initialTab) setActiveTab(initialTab);
+            setLocalCompany(company || {});
         }
-    }, [isOpen, initialTab]);
+    }, [isOpen, initialTab, company]);
 
     if (!isOpen) return null;
 
     // -- Handlers --
 
-    const handleCompanyChange = (field, value) => {
-        setCompany({ ...company, [field]: value });
-    };
-
     const handleLogoUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = (ev) => handleCompanyChange('logo', ev.target.result);
+            reader.onload = (ev) => setLocalCompany({ ...localCompany, logo: ev.target.result });
             reader.readAsDataURL(file);
         }
     };
@@ -126,40 +126,79 @@ export default function ConfigModal({
 
                         {activeTab === 'company' && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '600px' }}>
-                                {/* Inputs same as before */}
+                                {/* Inputs modify local state */}
                                 <label>
                                     <span style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Nombre Comercial</span>
-                                    <input className="input" value={company.name || ''} onChange={e => handleCompanyChange('name', e.target.value)} />
+                                    <input
+                                        className="input"
+                                        value={localCompany.name || ''}
+                                        onChange={e => setLocalCompany({ ...localCompany, name: e.target.value })}
+                                    />
                                 </label>
                                 <label>
                                     <span style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Dirección</span>
-                                    <input className="input" value={company.address || ''} onChange={e => handleCompanyChange('address', e.target.value)} />
+                                    <input
+                                        className="input"
+                                        value={localCompany.address || ''}
+                                        onChange={e => setLocalCompany({ ...localCompany, address: e.target.value })}
+                                    />
                                 </label>
                                 <label>
                                     <span style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.25rem' }}>WhatsApp</span>
-                                    <input className="input" value={company.whatsapp || ''} onChange={e => handleCompanyChange('whatsapp', e.target.value)} />
+                                    <input
+                                        className="input"
+                                        value={localCompany.whatsapp || ''}
+                                        onChange={e => setLocalCompany({ ...localCompany, whatsapp: e.target.value })}
+                                    />
                                 </label>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                     <label>
                                         <span style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Email</span>
-                                        <input className="input" value={company.email || ''} onChange={e => handleCompanyChange('email', e.target.value)} />
+                                        <input
+                                            className="input"
+                                            value={localCompany.email || ''}
+                                            onChange={e => setLocalCompany({ ...localCompany, email: e.target.value })}
+                                        />
                                     </label>
                                     <label>
                                         <span style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Web</span>
-                                        <input className="input" value={company.web || ''} onChange={e => handleCompanyChange('web', e.target.value)} />
+                                        <input
+                                            className="input"
+                                            value={localCompany.web || ''}
+                                            onChange={e => setLocalCompany({ ...localCompany, web: e.target.value })}
+                                        />
                                     </label>
                                 </div>
 
                                 <label>
                                     <span style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Logo</span>
                                     <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ marginTop: '0.5rem' }} />
-                                    {company.logo && <img src={company.logo} alt="Logo Preview" style={{ height: '50px', marginTop: '1rem', display: 'block' }} />}
+                                    {localCompany.logo && <img src={localCompany.logo} alt="Logo Preview" style={{ height: '50px', marginTop: '1rem', display: 'block' }} />}
                                 </label>
 
                                 <label>
                                     <span style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Términos y condiciones (para el PDF)</span>
-                                    <textarea className="input" rows={3} value={company.terms || ''} onChange={e => handleCompanyChange('terms', e.target.value)} />
+                                    <textarea
+                                        className="input"
+                                        rows={3}
+                                        value={localCompany.terms || ''}
+                                        onChange={e => setLocalCompany({ ...localCompany, terms: e.target.value })}
+                                    />
                                 </label>
+
+                                <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={() => {
+                                            if (window.confirm("¿Guardar cambios de la empresa?")) {
+                                                setCompany(localCompany);
+                                            }
+                                        }}
+                                        style={{ width: '100%', justifyContent: 'center' }}
+                                    >
+                                        💾 Guardar Cambios
+                                    </button>
+                                </div>
                             </div>
                         )}
 
