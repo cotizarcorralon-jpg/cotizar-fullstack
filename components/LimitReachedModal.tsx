@@ -31,16 +31,25 @@ export default function LimitReachedModal({
             <div
                 style={{
                     background: 'white',
-                    borderRadius: '24px',
-                    padding: '2rem',
-                    width: '100%',
-                    maxWidth: '460px',
+                    borderRadius: '20px',
+                    padding: '1.25rem',
+                    width: '95%',
+                    maxWidth: '400px',
+                    maxHeight: '95vh', // Increased max-height slightly just in case
+                    overflowY: 'auto',
                     position: 'relative',
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                    boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.2)',
                     textAlign: 'center',
-                    border: '1px solid rgba(255,255,255,0.1)'
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
                 }}
             >
+                <style jsx>{`
+                    div::-webkit-scrollbar {
+                        display: none; /* Hide scrollbar for Chrome/Safari/Opera */
+                    }
+                `}</style>
                 {/* Close */}
                 <button
                     onClick={onClose}
@@ -63,58 +72,65 @@ export default function LimitReachedModal({
                 </button>
 
                 {/* Header */}
-                <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ marginBottom: '0.75rem' }}>
                     <div style={{
-                        width: '56px', height: '56px', background: '#dbeafe', color: '#2563eb',
+                        width: '40px', height: '40px', background: '#dbeafe', color: '#2563eb',
                         borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        margin: '0 auto 1rem auto'
+                        margin: '0 auto 0.5rem auto'
                     }}>
-                        <Rocket size={32} />
+                        <Rocket size={20} />
                     </div>
-                    <h3 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1e293b', marginBottom: '0.5rem', lineHeight: 1.2 }}>
-                        ¡Desbloqueá todo el potencial!
+                    <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#1e293b', marginBottom: '0.2rem', lineHeight: 1.2 }}>
+                        No frenes tus ventas por un límite
                     </h3>
-                    <p style={{ color: '#64748b', fontSize: '1rem' }}>
-                        Superaste el límite gratuito mensual.
+                    <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
+                        Pasá a PRO y cotizá sin restricciones
                     </p>
                 </div>
 
                 {/* Benefits */}
-                <div style={{ textAlign: 'left', background: '#f8fafc', borderRadius: '16px', padding: '1.25rem', marginBottom: '1.5rem', border: '1px solid #e2e8f0' }}>
-                    <h4 style={{ fontSize: '0.9rem', textTransform: 'uppercase', color: '#94a3b8', fontWeight: 700, marginBottom: '1rem', letterSpacing: '0.05em' }}>
+                <div style={{ textAlign: 'left', background: '#f8fafc', borderRadius: '12px', padding: '0.9rem', marginBottom: '0.75rem', border: '1px solid #e2e8f0' }}>
+                    <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#94a3b8', fontWeight: 700, marginBottom: '0.5rem', letterSpacing: '0.05em', textAlign: 'center' }}>
                         VENTAJAS PRO
                     </h4>
-                    <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                         {[
-                            'Cotizaciones ilimitadas 🚀',
-                            'Agregá todos tus productos 📦',
-                            'Modificá precios libremente 🏷️',
-                            'Personalizá con tu logo y datos 🏢'
+                            'Cotizá sin límites y respondé más rápido',
+                            'Tené todo tu catálogo en un solo lugar',
+                            'Ajustá precios en segundos y evitá errores',
+                            'Enviá cotizaciones con tu marca profesional'
                         ].map((item, idx) => (
-                            <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.95rem', color: '#334155', fontWeight: 500 }}>
-                                <div style={{ background: '#dcfce7', borderRadius: '50%', padding: '2px', display: 'flex' }}>
-                                    <Check size={14} color="#16a34a" strokeWidth={3} />
+                            <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: '#334155', fontWeight: 500, textAlign: 'left' }}>
+                                <div style={{ background: '#dcfce7', borderRadius: '50%', padding: '2px', display: 'flex', flexShrink: 0 }}>
+                                    <Check size={12} color="#16a34a" strokeWidth={3} />
                                 </div>
-                                {item}
+                                <span style={{ flex: 1, lineHeight: '1.25' }}>{item}</span>
                             </li>
                         ))}
                     </ul>
                 </div>
 
                 {/* Pricing & CTA */}
-                <div style={{ marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '10px', marginBottom: '1.5rem' }}>
-                        <span style={{ textDecoration: 'line-through', color: '#94a3b8', fontSize: '1.1rem', fontWeight: 500 }}>
+                <div style={{ marginBottom: '0.25rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1rem' }}>
+                        {/* Old Price Centered Above */}
+                        <span style={{ textDecoration: 'line-through', color: '#94a3b8', fontSize: '0.9rem', fontWeight: 500, marginBottom: '-4px' }}>
                             $89.000
                         </span>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                            <span style={{ fontSize: '2rem', fontWeight: 800, color: '#0f172a', lineHeight: 1 }}>
-                                $19.900
+
+                        {/* Main Price Perfectly Centered */}
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', justifyContent: 'center' }}>
+                            <span style={{ fontSize: '2rem', fontWeight: 800, color: '#0f172a', lineHeight: 1, letterSpacing: '-0.02em' }}>
+                                $19.900 ARS
                             </span>
-                            <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>
-                                /mes para nuevos usuarios
+                            <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 600 }}>
+                                /mes
                             </span>
                         </div>
+
+                        <p style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: 600, marginTop: '8px', background: '#dcfce7', padding: '4px 12px', borderRadius: '100px' }}>
+                            💡 Menos de $700 pesos por día
+                        </p>
                     </div>
 
                     <button
@@ -125,7 +141,7 @@ export default function LimitReachedModal({
                         style={{
                             width: '100%',
                             padding: '1rem',
-                            background: 'black',
+                            background: '#16a34a',
                             color: 'white',
                             border: 'none',
                             borderRadius: '12px',
@@ -136,18 +152,23 @@ export default function LimitReachedModal({
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '8px',
-                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                            transition: 'transform 0.1s'
+                            boxShadow: '0 4px 6px -1px rgba(22, 163, 74, 0.2), 0 2px 4px -1px rgba(22, 163, 74, 0.1)',
+                            transition: 'all 0.2s ease'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.background = '#15803d';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.background = '#16a34a';
+                        }}
                     >
-                        <Zap size={20} fill="currentColor" />
-                        Obtener Plan PRO
+                        🚀 Activar PRO ahora
                     </button>
 
                     <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: '#64748b' }}>
-                        Cancelá cuando quieras. Sin compromisos.
+                        🔒 Sin contratos. Cancelá cuando quieras.
                     </p>
                 </div>
             </div>

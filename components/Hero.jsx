@@ -17,7 +17,7 @@ export default function Hero({ onScrollToQuote }) {
                     letterSpacing: '-0.03em',
                     color: 'var(--text-primary)'
                 }}>
-                    Cotizá en minutos <br />
+                    Cotizá en segundos <br />
                     <span style={{ color: 'var(--primary)' }}>lo que hoy te lleva una hora</span>
                 </h1>
 
@@ -28,7 +28,7 @@ export default function Hero({ onScrollToQuote }) {
                     margin: '0 auto 2.5rem auto',
                     lineHeight: '1.6'
                 }}>
-                    Simplemente pegá el mensaje de WhatsApp y cotizAR interpreta el pedido, calcula los precios y genera un PDF listo para enviar.
+                    Simplemente pegá el mensaje de WhatsApp y cotizApp interpreta el pedido, calcula los precios y genera un PDF listo para enviar.
                 </p>
 
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
