@@ -12,16 +12,27 @@ export default function ConfigModal({
     const [activeTab, setActiveTab] = useState('company');
     const [searchTerm, setSearchTerm] = useState('');
     const [newMaterial, setNewMaterial] = useState({ name: '', unit: '', price: '' });
+    const [saveStatus, setSaveStatus] = useState('idle'); // 'idle', 'saving', 'success'
+
+    // Helper to normalize DB keys (website, logoUrl, pdfTerms) to Frontend keys (web, logo, terms)
+    const normalizeCompany = (c) => {
+        if (!c) return {};
+        return {
+            ...c,
+            web: c.web || c.website || '',
+            logo: c.logo || c.logoUrl || '',
+            terms: c.terms || c.pdfTerms || ''
+        };
+    };
 
     // Local state for company form to avoid auto-saving on every keystroke
-    const [localCompany, setLocalCompany] = useState(company || {});
-    const [saveStatus, setSaveStatus] = useState('idle'); // 'idle', 'saving', 'success'
+    const [localCompany, setLocalCompany] = useState(normalizeCompany(company));
 
     // Sync tab when opening & sync local company data
     React.useEffect(() => {
         if (isOpen) {
             if (initialTab) setActiveTab(initialTab);
-            setLocalCompany(company || {});
+            setLocalCompany(normalizeCompany(company));
             setSaveStatus('idle');
         }
     }, [isOpen, initialTab, company]);
