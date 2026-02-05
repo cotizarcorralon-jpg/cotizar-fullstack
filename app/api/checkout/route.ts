@@ -32,7 +32,6 @@ export async function POST(req: Request) {
                     ? process.env.NEXTAUTH_URL
                     : "https://cotizapp.click",
                 external_reference: companyId,
-                payer_email: email || "test_user_123@test.com", // Usar email real o fallback
                 status: "pending"
             })
         });
