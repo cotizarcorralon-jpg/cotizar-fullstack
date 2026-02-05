@@ -3,8 +3,11 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-    title: "cotizAR - Tu sistema de presupuestos inteligente",
+    title: "CotizApp - Tu sistema de presupuestos inteligente",
     description: "Generá presupuestos profesionales en segundos desde mensajes de WhatsApp",
+    icons: {
+        icon: '/favicon.png',
+    },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

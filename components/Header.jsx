@@ -16,9 +16,9 @@ export default function Header({ onOpenConfig, user, plan, onLoginClick }) {
             display: 'flex',
             alignItems: 'center'
         }}>
-            <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <div style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--primary)', letterSpacing: '-0.02em' }}>
-                    CotizAPP
+            <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+                    <img src="/logo.png" alt="CotizAPP" style={{ height: '150px', width: 'auto', objectFit: 'contain' }} />
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
