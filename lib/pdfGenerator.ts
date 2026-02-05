@@ -32,10 +32,18 @@ export function generatePDF(
 
     let yPos = 20;
 
-    // Header: Logo (if exists), Company Name, Date
-    if (company.logoUrl) {
-        // Note: In production, you'd need to handle image loading async
-        // For now, we'll skip the logo or use a placeholder
+    // Header: Logo (if exists)
+    const logo = (company as any).logo || company.logoUrl;
+    if (logo && logo.startsWith('data:image')) {
+        try {
+            const imgProps = doc.getImageProperties(logo);
+            const imgWidth = 40;
+            const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+            doc.addImage(logo, 'PNG', (pageWidth - imgWidth) / 2, yPos, imgWidth, imgHeight);
+            yPos += imgHeight + 5;
+        } catch (e) {
+            console.error("Error adding logo to PDF", e);
+        }
     }
 
     // Company Name (centered)
@@ -57,36 +65,51 @@ export function generatePDF(
         yPos += 5;
     }
 
-    if (company.website) {
-        doc.text(company.website, pageWidth / 2, yPos, { align: 'center' });
+    const website = company.website || (company as any).web;
+    if (website) {
+        doc.text(website, pageWidth / 2, yPos, { align: 'center' });
         yPos += 5;
     }
 
     // Date (right aligned)
     const dateStr = new Date().toLocaleDateString('es-AR');
     doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0); // Black for date
     doc.text(dateStr, pageWidth - marginRight, 20, { align: 'right' });
+
+    // Quote Number (Subtle, below date)
+    if (quoteNumber) {
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100); // Grey
+        doc.text(`${quoteNumber}`, pageWidth - marginRight, 24, { align: 'right' });
+        doc.setTextColor(0, 0, 0); // Reset to black
+    }
 
     yPos += 5;
     doc.line(marginLeft, yPos, pageWidth - marginRight, yPos);
     yPos += 10;
 
-    // Title: COTIZACIÓN
+    // Title: Cotización de materiales
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text('COTIZACIÓN' + (quoteNumber ? ` #${quoteNumber}` : ''), marginLeft, yPos);
+    doc.text('Cotización de materiales', marginLeft, yPos);
     yPos += 10;
 
     // Table
     autoTable(doc, {
         startY: yPos,
         head: [['Material', 'Cantidad', 'Precio Unit.', 'Subtotal']],
-        body: items.map(item => [
-            item.name,
-            `${item.quantity} ${item.unit}`,
-            `$ ${item.unitPrice.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
-            `$ ${item.subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`
-        ]),
+        body: items.map(item => {
+            // Map price/unitPrice safe fallback
+            const price = (item as any).price || item.unitPrice || 0;
+            const sub = item.subtotal || 0;
+            return [
+                item.name,
+                `${item.quantity} ${item.unit}`,
+                `$ ${price.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`,
+                `$ ${sub.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`
+            ];
+        }),
         theme: 'striped',
         headStyles: { fillColor: [59, 130, 246], textColor: 255 },
         margin: { left: marginLeft, right: marginRight },
@@ -112,12 +135,20 @@ export function generatePDF(
     yPos += 10;
 
     // Terms
-    const terms = company.pdfTerms || 'Presupuesto válido por 7 días. Flete NO incluido.';
+    const terms = (company as any).terms || company.pdfTerms || 'Presupuesto válido por 7 días. Flete NO incluido.';
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    const splitTerms = doc.splitTextToSize(terms, pageWidth - marginLeft - marginRight);
-    doc.text(splitTerms, marginLeft, yPos);
+    // Center alignment requires manually calculating X or using 'align: center' option?
+    // doc.text supports options since recent versions. 'splitTextToSize' is useful but 'text' with align handles multi-line?
+    // splitTextToSize returns array of strings. We can center each line.
+
+    // Simpler: Just rely on splitTextToSize + loop or use { align: 'center', maxWidth: ... } if supported.
+    // jsPDF text() supports maxWidth and align in recent versions.
+    // Let's use the layout similar to above (centered).
+
+    doc.text(terms, pageWidth / 2, yPos, { align: 'center', maxWidth: pageWidth - marginLeft - marginRight });
 
     // Download
-    doc.save(`cotizacion_${Date.now()}.pdf`);
+    const fileName = quoteNumber ? `cotizacion_${quoteNumber}.pdf` : `cotizacion_${Date.now()}.pdf`;
+    doc.save(fileName);
 }

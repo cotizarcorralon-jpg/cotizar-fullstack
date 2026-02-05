@@ -85,9 +85,17 @@ export default function Home() {
       setUser(sessionData.user);
       localStorage.setItem('cotizar_user', JSON.stringify(sessionData.user));
 
-      // If we don't have a company for this user, we might want to fetch it or create a default one linked to the user
-      // For now, we keep the existing logic of loading from local storage, or relying on what's there.
-      // Ideally, we should fetch the user's company from the DB here.
+      // Fetch company from DB to ensure we have the correct data and trigger material population
+      const userId = (sessionData.user as any).id;
+      if (userId) {
+        getOrCreateCompany(userId)
+          .then(dbCompany => {
+            setCompany(dbCompany);
+            localStorage.setItem('cotizar_company', JSON.stringify(dbCompany));
+            refreshMaterials(dbCompany.id);
+          })
+          .catch(e => console.error("Error fetching authenticated company", e));
+      }
 
       // Sync demo count from storage so we don't show 0/3 if they already used some
       setDemoQuoteCount(getDemoQuoteCount());
@@ -282,7 +290,10 @@ export default function Home() {
   };
 
   const handleDownload = () => {
-    generatePDF(company, quoteItems, quoteTotal);
+    // Generate simplified unique ID for "Internal Order" simulation
+    // Using date slice + random to look like "N831924"
+    const quoteNumber = `N${Date.now().toString().slice(-6)}`;
+    generatePDF(company, quoteItems, quoteTotal, quoteNumber);
   };
 
   const scrollToQuote = () => {
