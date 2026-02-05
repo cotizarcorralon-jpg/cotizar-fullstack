@@ -5,12 +5,24 @@ import { prisma } from '@/lib/prisma';
 export async function POST(req: Request) {
     try {
         const url = new URL(req.url);
-        const topic = url.searchParams.get('topic') || url.searchParams.get('type');
-        const id = url.searchParams.get('id') || url.searchParams.get('data.id');
+        let topic = url.searchParams.get('topic') || url.searchParams.get('type');
+        let id = url.searchParams.get('id') || url.searchParams.get('data.id');
 
-        console.log(`Webhook recibido: ${topic} - ${id}`);
+        // Intento leer el body si faltan datos en la URL
+        if (!topic || !id) {
+            try {
+                const body = await req.json();
+                console.log("Webhook Body:", JSON.stringify(body));
+                topic = topic || body.topic || body.type;
+                id = id || body.id || (body.data && body.data.id);
+            } catch (e) {
+                console.log("Error leyendo body del webhook o body vacío");
+            }
+        }
 
-        if (topic === 'preapproval') {
+        console.log(`Webhook procesado: ${topic} - ${id}`);
+
+        if (topic === 'preapproval' || topic === 'subscription_preapproval') {
             // 1. Consultamos a Mercado Pago usando GET para ver de quién es esta suscripción
             const mpResponse = await fetch(`https://api.mercadopago.com/preapproval/${id}`, {
                 headers: {
@@ -37,6 +49,8 @@ export async function POST(req: Request) {
 
                     console.log(`¡PLAN PRO ACTIVADO PARA ${companyId}!`);
                 }
+            } else {
+                console.error("Error consultando MP:", data);
             }
         }
 

@@ -243,27 +243,44 @@ export default function ConfigModal({
                                             <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
                                                 🚀 <strong>¿Necesitás cotizar sin límites?</strong> Suscribite al plan ilimitado.
                                             </p>
-                                            <a
-                                                href="https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=f03e1a6abedd4f1fba4947305b598264"
-                                                target="_blank"
-                                                rel="noreferrer"
+
+
+                                            <button
+                                                onClick={onUpgrade}
                                                 className="btn btn-primary"
-                                                style={{ width: '100%', justifyContent: 'center', textDecoration: 'none' }}
+                                                style={{ width: '100%', justifyContent: 'center', marginBottom: '1rem' }}
                                             >
                                                 <CreditCard size={18} />
                                                 Suscribirme al Plan Ilimitado
-                                            </a>
+                                            </button>
+
                                             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-                                                Después de pagar, activá el modo prueba abajo para desbloquear.
+                                                Al hacer clic, serás redirigido a Mercado Pago para completar la suscripción de forma segura.
                                             </p>
 
                                             <div style={{ marginTop: '2rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+                                                <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.5rem' }}>
+                                                    ¿Ya realizaste el pago?
+                                                </p>
                                                 <button
-                                                    className="btn btn-ghost"
-                                                    onClick={onUpgrade}
-                                                    style={{ fontSize: '0.85rem', color: '#94a3b8' }}
+                                                    className="btn btn-secondary"
+                                                    onClick={async () => {
+                                                        try {
+                                                            const { checkSubscriptionStatus } = await import('@/lib/api');
+                                                            const status = await checkSubscriptionStatus(company.id);
+                                                            if (status.active) {
+                                                                alert('¡Pago confirmado! Tu cuenta ahora es PRO. Recargando...');
+                                                                window.location.reload();
+                                                            } else {
+                                                                alert('No se encontró una suscripción activa todavía. Si acabás de pagar, esperá unos instantes.');
+                                                            }
+                                                        } catch (e) {
+                                                            alert('Error verificando estado.');
+                                                        }
+                                                    }}
+                                                    style={{ fontSize: '0.85rem', width: '100%', justifyContent: 'center' }}
                                                 >
-                                                    🚀 Activar PRO (Modo Prueba)
+                                                    🔄 Verificar Estado de Suscripción
                                                 </button>
                                             </div>
                                         </>

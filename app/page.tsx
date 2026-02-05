@@ -354,6 +354,9 @@ export default function Home() {
     }
 
     try {
+      // Set flag to check status on return
+      sessionStorage.setItem('pending_upgrade_check', 'true');
+
       // Pass the user email (from company or user object) to pre-fill checkout
       const emailToUse = company.email || user?.email;
       const response = await createCheckoutSession(company.id, emailToUse);
@@ -367,6 +370,35 @@ export default function Home() {
       alert("Error iniciando el pago. Intenta nuevamente.");
     }
   };
+
+  // Check for pending upgrade on mount
+  useEffect(() => {
+    const checkUpgrade = async () => {
+      const isPending = sessionStorage.getItem('pending_upgrade_check');
+      if (isPending && company?.id && company.id !== 'local' && company.plan !== 'Profesional') {
+        try {
+          // Import dynamically or use the prop if passed, but here we can just fetch or import
+          // For now we assume imports are available or we use the passed prop logic. 
+          // We need to import checkSubscriptionStatus. I'll add it to imports above.
+          const { checkSubscriptionStatus } = await import('@/lib/api');
+          const status = await checkSubscriptionStatus(company.id);
+
+          if (status.active) {
+            alert("¡Pago confirmado! Tu cuenta ahora es PRO.");
+            sessionStorage.removeItem('pending_upgrade_check');
+            window.location.reload(); // Reload to refresh everything
+          }
+        } catch (e) {
+          console.error("Error checking status", e);
+        }
+      }
+    };
+
+    if (user && company) {
+      checkUpgrade();
+    }
+  }, [user, company]); // Run when user/company loads
+
 
   return (
     <div className="App">
