@@ -23,7 +23,7 @@ type QuoteResultProps = {
   items: QuoteItem[];
   total: number;
   company?: CompanyInfo; // ✅ existe para que page.tsx pueda pasarla
-  onUpdateItem: (index: number, newPrice: number) => void;
+  onUpdateItem: (index: number, field: string, value: any) => void;
   onDownload: () => void;
   showPalletInfo: boolean;
   isDemo: boolean;
@@ -138,11 +138,46 @@ export default function QuoteResult(props: QuoteResultProps) {
               <tbody>
                 {items.map((item, idx) => (
                   <tr key={idx} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '0.75rem', fontWeight: '500' }}>{item.quantity}</td>
-                    <td style={{ padding: '0.75rem', color: 'var(--text-secondary)' }}>
-                      {item.unit.toLowerCase() === 'unidad' || item.unit.toLowerCase() === 'u' ? 'U' : item.unit}
+                    <td style={{ padding: '0.75rem', fontWeight: '500' }}>
+                      <input
+                        type="number"
+                        value={item.quantity}
+                        onChange={(e) => onUpdateItem(idx, 'quantity', Number.parseFloat(e.target.value) || 0)}
+                        style={{
+                          width: '60px',
+                          padding: '4px',
+                          borderRadius: '4px',
+                          border: '1px solid var(--border)'
+                        }}
+                      />
                     </td>
-                    <td style={{ padding: '0.75rem', fontWeight: '500' }}>{item.name}</td>
+                    <td style={{ padding: '0.75rem', color: 'var(--text-secondary)' }}>
+                      <input
+                        type="text"
+                        value={item.unit}
+                        onChange={(e) => onUpdateItem(idx, 'unit', e.target.value)}
+                        style={{
+                          width: '50px',
+                          padding: '4px',
+                          borderRadius: '4px',
+                          border: '1px solid var(--border)'
+                        }}
+                      />
+                    </td>
+                    <td style={{ padding: '0.75rem', fontWeight: '500' }}>
+                      <input
+                        type="text"
+                        value={item.name}
+                        onChange={(e) => onUpdateItem(idx, 'name', e.target.value)}
+                        style={{
+                          width: '100%',
+                          minWidth: '150px',
+                          padding: '4px',
+                          borderRadius: '4px',
+                          border: '1px solid var(--border)'
+                        }}
+                      />
+                    </td>
 
                     <td style={{ padding: '0.75rem', textAlign: 'right' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
@@ -150,7 +185,7 @@ export default function QuoteResult(props: QuoteResultProps) {
                         <input
                           type="number"
                           value={item.price}
-                          onChange={(e) => onUpdateItem(idx, Number.parseFloat(e.target.value) || 0)}
+                          onChange={(e) => onUpdateItem(idx, 'price', Number.parseFloat(e.target.value) || 0)}
                           style={{
                             width: '90px',
                             padding: '4px',

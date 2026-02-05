@@ -22,6 +22,7 @@ const DEFAULT_MATERIALS = [
   { id: 2, name: 'Cal (bolsa)', unit: 'bolsa', price: 4500, keywords: ['cal', 'cal comun', 'bolsa de cal'] },
   { id: 3, name: 'Arena', unit: 'm3', price: 15000, keywords: ['arena', 'arena fina', 'metros de arena', 'metro de arena', 'mts arena'] },
   { id: 4, name: 'Piedra partida', unit: 'm3', price: 28000, keywords: ['piedra', 'piedra partida', 'metros de piedra'] },
+  { id: 8, name: 'Ladrillo Común', unit: 'u', price: 100, keywords: ['ladrillo comun', 'ladrillo común', 'ladrillos comunes'] },
   { id: 5, name: 'Ladrillo Hueco 8x18x33', unit: 'u', price: 300, keywords: ['ladrillo 8', 'hueco 8', 'ladrillo del 8', 'ladrillo hueco 8', 'ladrillos 8'] },
   { id: 6, name: 'Ladrillo Hueco 12x18x33', unit: 'u', price: 350, keywords: ['ladrillo 12', 'hueco 12', 'ladrillo del 12', 'ladrillos', 'huecos', 'ladrillo hueco', 'ladrillos huecos'] },
   { id: 7, name: 'Hierro / Acero (kg)', unit: 'kg', price: 1200, keywords: ['hierro', 'acero', 'barra del', 'hierro del'] }
@@ -281,10 +282,15 @@ export default function Home() {
     await handleGenerate(exampleText);
   };
 
-  const handleUpdateItem = (index: number, newPrice: number) => {
+  const handleUpdateItem = (index: number, field: string, value: any) => {
     const newItems = [...quoteItems];
-    newItems[index].price = newPrice;
-    newItems[index].subtotal = newItems[index].quantity * newPrice;
+    newItems[index] = { ...newItems[index], [field]: value };
+
+    // Recalculate subtotal if price or quantity changes
+    if (field === 'price' || field === 'quantity') {
+      newItems[index].subtotal = newItems[index].quantity * newItems[index].price;
+    }
+
     setQuoteItems(newItems);
     setQuoteTotal(newItems.reduce((acc, item) => acc + item.subtotal, 0));
   };
