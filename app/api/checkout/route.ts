@@ -13,40 +13,13 @@ export async function POST(req: Request) {
 
         // ... (lines 14-38 omitted for brevity, keeping them as is)
 
-        const mpResponse = await fetch('https://api.mercadopago.com/preapproval', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}`
-            },
-            body: JSON.stringify({
-                reason: "Cotizador Corralon PRO",
-                auto_recurring: {
-                    frequency: 1,
-                    frequency_type: "months",
-                    transaction_amount: 19900,
-                    currency_id: "ARS"
-                },
-                // Mercado Pago requiere HTTPS. Si es localhost, usamos la de producción como fallback para no romper la validación.
-                back_url: (process.env.NEXTAUTH_URL && !process.env.NEXTAUTH_URL.includes("localhost"))
-                    ? process.env.NEXTAUTH_URL
-                    : "https://cotizapp.click",
-                external_reference: companyId,
-                payer_email: `test_user_${Date.now()}@testuser.com`,
-                status: "pending"
-            })
-        });
+        // Usamos el link del Plan Preaprobado YA EXISTENTE (fijo)
+        // Le adjuntamos la referencia externa (companyId) para saber quién pagó
+        const planId = "f03e1a6abedd4f1fba4947305b598264";
+        const url = `https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_plan_id=${planId}&external_reference=${companyId}`;
 
-        const data = await mpResponse.json();
-
-        if (!mpResponse.ok) {
-            console.error("MP Error Status:", mpResponse.status);
-            console.error("MP Error Data:", JSON.stringify(data, null, 2));
-            return NextResponse.json({ error: 'Error creating subscription', details: data }, { status: 500 });
-        }
-
-        // Devolvemos el link de pago generado (init_point)
-        return NextResponse.json({ url: data.init_point });
+        // Devolvemos el link directo
+        return NextResponse.json({ url });
 
     } catch (error) {
         console.error(error);
