@@ -135,8 +135,10 @@ export async function POST(req: Request) {
             hasPallets
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error generating quote:", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        return NextResponse.json({
+            error: `Error generating quote: ${error.message || error}`
+        }, { status: 500 });
     }
 }
