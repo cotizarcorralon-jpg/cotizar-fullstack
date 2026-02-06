@@ -5,7 +5,20 @@ import React from 'react';
 // Force dynamic rendering to always get the latest data
 export const dynamic = 'force-dynamic';
 
-export default async function HistorialPage() {
+export default async function HistorialPage({
+    searchParams,
+}: {
+    searchParams: { key?: string };
+}) {
+    const secret = process.env.ADMIN_KEY || 'admin123';
+    if (searchParams.key !== secret) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <h1 className="text-2xl font-bold text-gray-400">403 - Acceso Denegado</h1>
+            </div>
+        );
+    }
+
     const quotes = await prisma.quote.findMany({
         orderBy: {
             createdAt: 'desc',

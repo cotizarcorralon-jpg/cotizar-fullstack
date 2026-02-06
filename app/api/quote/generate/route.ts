@@ -27,20 +27,19 @@ export async function POST(req: Request) {
 
         // Enforce limit for Non-Pro users
         if (!isPro) {
-            const CACHE_LIMIT = 5; // IP Limit per 24h
-            const startOfDay = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24h ago
+            const CACHE_LIMIT = 3; // IP Limit Total (Lifetime)
 
+            // Count total historical usage for this IP
             const usageCount = await (prisma as any).usageLog.count({
                 where: {
                     ip: ip,
-                    createdAt: { gte: startOfDay },
                     action: 'GENERATE_QUOTE'
                 }
             });
 
             if (usageCount >= CACHE_LIMIT) {
                 return NextResponse.json({
-                    error: 'Límite diario alcanzado. Por favor, adquiere el plan PRO para continuar sin límites.'
+                    error: 'Límite de prueba alcanzado. Has utilizado tus 3 cotizaciones gratuitas. Por favor, adquiere el plan PRO para continuar sin límites.'
                 }, { status: 429 });
             }
 

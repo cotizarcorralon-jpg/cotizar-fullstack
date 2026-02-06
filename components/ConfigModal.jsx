@@ -350,28 +350,7 @@ export default function ConfigModal({
                                                     </p>
                                                     <button
                                                         className="btn btn-secondary"
-                                                        onClick={async () => {
-                                                            try {
-                                                                const { checkSubscriptionStatus } = await import('@/lib/api');
-                                                                const paymentStartTime = sessionStorage.getItem('payment_start_time');
-                                                                // Si no hay fecha de inicio de pago en session (ej: recarga de página), buscamos solo en las últimas 24hs
-                                                                // Esto evita que clickear 'Verificar' active suscripciones viejas de Sandbox que deberían ignorarse
-                                                                const searchFrom = paymentStartTime ? Number(paymentStartTime) : Date.now() - (24 * 60 * 60 * 1000);
-
-                                                                const status = await checkSubscriptionStatus(company.id, searchFrom);
-
-                                                                if (status.active) {
-                                                                    alert('¡Pago confirmado! Tu cuenta ahora es PRO. Recargando...');
-                                                                    sessionStorage.removeItem('payment_start_time'); // Clean up on success
-                                                                    window.location.reload();
-                                                                } else {
-                                                                    setShowSupportModal(true);
-                                                                }
-                                                            } catch (e) {
-                                                                console.error(e);
-                                                                alert('Error verificando estado.');
-                                                            }
-                                                        }}
+                                                        onClick={() => setShowSupportModal(true)}
                                                         style={{ fontSize: '0.85rem', width: '100%', justifyContent: 'center' }}
                                                     >
                                                         🔄 Verificar Estado de Suscripción
@@ -408,15 +387,15 @@ export default function ConfigModal({
                         </div>
 
                         <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem', color: '#1e293b' }}>
-                            ¿No se activó tu plan?
+                            ¿Ya realizaste el pago?
                         </h3>
 
                         <p style={{ color: '#475569', lineHeight: '1.6', marginBottom: '2rem' }}>
-                            Si hiciste el pago de la suscripción hace más de 5 minutos y todavía no lo tenés activo, comunicate con soporte por WhatsApp.
+                            La activación suele ser inmediata, pero a veces puede demorar unos minutos. Si ya pagaste y sigue sin activarse, avísanos para habilitarlo manualmente.
                         </p>
 
                         <a
-                            href="https://wa.me/541171918141?text=Hola%20Brandon,%20pagu%C3%A9%20la%20suscripci%C3%BB%C3%B3n%20en%20CotizApp%20y%20todav%C3%ADa%20no%20se%20activa."
+                            href="https://wa.me/541171918141?text=Hola%20Brandon,%20ya%20pagu%C3%A9%20la%20suscripci%C3%B3n%20en%20CotizApp%20pero%20sigo%20viendo%20el%20plan%20gratis."
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn btn-primary"
@@ -432,7 +411,7 @@ export default function ConfigModal({
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
                                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                             </svg>
-                            Contactar a Soporte (Brandon)
+                            Contactar a Soporte
                         </a>
 
                         <p style={{ marginTop: '1.5rem', fontSize: '0.85rem', color: '#94a3b8' }}>
