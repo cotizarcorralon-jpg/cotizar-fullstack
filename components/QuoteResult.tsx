@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Download } from 'lucide-react';
-import { Document, Page, pdfjs } from 'react-pdf';
+import dynamic from 'next/dynamic';
 
-// Configurar el worker de PDF.js para que funcione sin configuración extra de webpack
-// Usamos unpkg como CDN confiable
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// Dynamic import to avoid SSR issues with react-pdf (DOMMatrix error)
+const MobilePdfViewer = dynamic(() => import('./MobilePdfViewer'), {
+  ssr: false,
+  loading: () => <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>Cargando visor PDF...</div>
+});
 
 type QuoteItem = {
   quantity: number;
@@ -296,29 +298,8 @@ export default function QuoteResult(props: QuoteResultProps) {
               </div>
 
               {isMobile ? (
-                /* Mobile: Usar react-pdf para renderizar como Canvas */
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  backgroundColor: '#f8fafc',
-                  padding: '1rem',
-                  borderRadius: '0.5rem',
-                  border: '1px solid #e2e8f0',
-                  minHeight: '300px'
-                }}>
-                  <Document
-                    file={previewUrl}
-                    loading={<div style={{ padding: '20px', color: '#64748b' }}>Cargando documento...</div>}
-                    error={<div style={{ padding: '20px', color: '#ef4444' }}>No se pudo cargar la vista previa. Por favor descargá el PDF.</div>}
-                  >
-                    <Page
-                      pageNumber={1}
-                      width={containerWidth}
-                      renderTextLayer={false}
-                      renderAnnotationLayer={false}
-                    />
-                  </Document>
-                </div>
+                /* Mobile: Usar react-pdf via Dynamic Import para evitar error SSR */
+                <MobilePdfViewer url={previewUrl} width={containerWidth} />
               ) : (
                 /* Desktop: Usar iframe nativo (Browser PDF Viewer) */
                 <iframe
