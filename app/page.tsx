@@ -11,6 +11,7 @@ import QuoteResult from '@/components/QuoteResult';
 import ConfigModal from '@/components/ConfigModal';
 import Login from '@/components/Login';
 import LimitReachedModal from '@/components/LimitReachedModal';
+import OnboardingModal from '@/components/OnboardingModal';
 
 import { login, generateQuote, getMaterials, addMaterial, updateMaterial, updateCompany, upgradeSubscription, createCheckoutSession, getOrCreateCompany } from '@/lib/api';
 import { generatePDF } from '@/lib/pdfGenerator';
@@ -35,6 +36,7 @@ export default function Home() {
 
   // UI State
   const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [configTab, setConfigTab] = useState('company');
   const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
 
@@ -102,7 +104,6 @@ export default function Home() {
     }
   }, [status, sessionData]);
 
-  // Load User from Local Storage if available (Fallback)
   // Helper: Refresh materials
   const refreshMaterials = async (companyId: string) => {
     if (companyId === 'local') {
@@ -188,23 +189,12 @@ export default function Home() {
     loadLocalData();
   }, [status]);
 
-  const handleLogin = async (mockUser: any) => {
-    // Legacy mock login function - kept for reference or removal
-    try {
-      const session = await login(mockUser);
-      setUser(session.user);
-      setCompany(session.company);
-
-      localStorage.setItem('cotizar_user', JSON.stringify(session.user));
-      localStorage.setItem('cotizar_company', JSON.stringify(session.company));
-
-      refreshMaterials(session.company.id);
-      setShowAuthModal(false);
-
-      localStorage.removeItem('cotizar_materials');
-      localStorage.removeItem('cotizar_demo');
-    } catch (err: any) {
-      alert("Error iniciando sesión: " + err.message);
+  const handleHeroClick = () => {
+    // Only show onboarding if user is NOT logged in or has default local company
+    if (!user || company?.id === 'local') {
+      setShowOnboarding(true);
+    } else {
+      scrollToQuote();
     }
   };
 
@@ -249,7 +239,7 @@ export default function Home() {
       }, 100);
 
     } catch (err: any) {
-      if (err.message.includes('Límite diario') || err.code === 'LIMIT_REACHED' || err.status === 429) {
+      if (err.message.includes('Límite diario') || err.message.includes('Límite de prueba') || err.code === 'LIMIT_REACHED' || err.status === 429) {
         if (!user) {
           setAuthReason('limit');
           setShowAuthModal(true);
@@ -262,7 +252,6 @@ export default function Home() {
     }
   };
 
-  // ✅ NUEVO: handler para "Usar ejemplo"
   const handleExample = async () => {
     const exampleText =
       "Hola, necesito 10 bolsas de cemento 25kg, 2 m3 de arena, 5 kg de hierro y 1 pallet de ladrillo hueco 12x18x33. Gracias.";
@@ -284,7 +273,6 @@ export default function Home() {
 
   const handleDownload = () => {
     // Generate simplified unique ID for "Internal Order" simulation
-    // Using date slice + random to look like "N831924"
     const quoteNumber = `N${Date.now().toString().slice(-6)}`;
     generatePDF(company, quoteItems, quoteTotal, quoteNumber);
   };
@@ -339,7 +327,6 @@ export default function Home() {
     }
   };
 
-
   const handleUpgrade = async () => {
     if (!company?.id) {
       alert("Error: No se encontró el ID de usuario.");
@@ -347,15 +334,13 @@ export default function Home() {
     }
 
     try {
-      // Set flag to check status on return, AND timestamp to filter old subs
       sessionStorage.setItem('pending_upgrade_check', 'true');
       sessionStorage.setItem('payment_start_time', Date.now().toString());
 
-      // Pass the user email (from company or user object) to pre-fill checkout
       const emailToUse = company.email || user?.email;
       const response = await createCheckoutSession(company.id, emailToUse);
       if (response.url) {
-        window.location.href = response.url; // Redirigir al usuario al link inteligente
+        window.location.href = response.url;
       } else {
         alert("Error generando el link de pago.");
       }
@@ -373,23 +358,15 @@ export default function Home() {
 
       if (isPending && company?.id && company.id !== 'local' && company.plan !== 'Profesional') {
         try {
-          // Import dynamically or use the prop if passed, but here we can just fetch or import
-          // For now we assume imports are available or we use the passed prop logic. 
-          // We need to import checkSubscriptionStatus. I'll add it to imports above.
           const { checkSubscriptionStatus } = await import('@/lib/api');
-
-          // Pass the timestamp to ensure we don't pick up old subscriptions from previous tests
           const status = await checkSubscriptionStatus(company.id, (paymentStartTime ? Number(paymentStartTime) : null) as any);
 
           if (status.active) {
             alert("¡Pago confirmado! Tu cuenta ahora es PRO.");
             sessionStorage.removeItem('pending_upgrade_check');
             sessionStorage.removeItem('payment_start_time');
-            window.location.reload(); // Reload to refresh everything
+            window.location.reload();
           } else {
-            // Optional: If check runs and returns false, we might want to clear the pending flag 
-            // to avoid repeated checks, OR keep it if we expect latency.
-            // For now, let's keep it but maybe log it.
             console.log("Pago no detectado aún.");
           }
         } catch (e) {
@@ -401,7 +378,7 @@ export default function Home() {
     if (user && company) {
       checkUpgrade();
     }
-  }, [user, company]); // Run when user/company loads
+  }, [user, company]);
 
 
   return (
@@ -414,7 +391,7 @@ export default function Home() {
       />
 
       <main>
-        <Hero onScrollToQuote={scrollToQuote} />
+        <Hero onScrollToQuote={handleHeroClick} />
         <HowItWorks />
 
         <QuoteGenerator
@@ -442,6 +419,22 @@ export default function Home() {
           />
         )}
       </main>
+
+      {/* MODALS */}
+
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        onConfigure={() => {
+          setShowOnboarding(false);
+          setConfigTab('company');
+          setIsConfigOpen(true);
+        }}
+        onSkip={() => {
+          setShowOnboarding(false);
+          scrollToQuote();
+        }}
+      />
 
       {showAuthModal && (
         <div style={{
