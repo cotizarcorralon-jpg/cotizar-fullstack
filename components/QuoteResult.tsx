@@ -1,7 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Download } from 'lucide-react';
+import { Document, Page, pdfjs } from 'react-pdf';
+
+// Configurar el worker de PDF.js para que funcione sin configuración extra de webpack
+// Usamos unpkg como CDN confiable
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 type QuoteItem = {
   quantity: number;
@@ -22,7 +27,7 @@ type CompanyInfo = {
 type QuoteResultProps = {
   items: QuoteItem[];
   total: number;
-  company?: CompanyInfo; // ✅ existe para que page.tsx pueda pasarla
+  company?: CompanyInfo;
   onUpdateItem: (index: number, field: string, value: any) => void;
   onDownload: () => void;
   showPalletInfo: boolean;
@@ -41,13 +46,25 @@ export default function QuoteResult(props: QuoteResultProps) {
 
   const { company } = props;
 
-  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [containerWidth, setContainerWidth] = useState<number>(300);
+
+  // Detect Mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      // Ajustar width para el PDF (ancho de pantalla menos padding aproximado)
+      setContainerWidth(Math.min(window.innerWidth - 48, 600));
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   if (!items || items.length === 0) return null;
-
-  // ... (rest of code until preview button)
-
-
 
   return (
     <section style={{ padding: '0 0 60px 0' }}>
@@ -277,11 +294,39 @@ export default function QuoteResult(props: QuoteResultProps) {
                 <h4 style={{ margin: 0 }}>Vista Previa del PDF</h4>
                 <button onClick={() => setPreviewUrl(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666' }}>❌ Cerrar</button>
               </div>
-              <iframe
-                src={previewUrl}
-                style={{ width: '100%', height: '600px', border: '1px solid #ddd', borderRadius: '8px' }}
-                title="Vista Previa PDF"
-              />
+
+              {isMobile ? (
+                /* Mobile: Usar react-pdf para renderizar como Canvas */
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  backgroundColor: '#f8fafc',
+                  padding: '1rem',
+                  borderRadius: '0.5rem',
+                  border: '1px solid #e2e8f0',
+                  minHeight: '300px'
+                }}>
+                  <Document
+                    file={previewUrl}
+                    loading={<div style={{ padding: '20px', color: '#64748b' }}>Cargando documento...</div>}
+                    error={<div style={{ padding: '20px', color: '#ef4444' }}>No se pudo cargar la vista previa. Por favor descargá el PDF.</div>}
+                  >
+                    <Page
+                      pageNumber={1}
+                      width={containerWidth}
+                      renderTextLayer={false}
+                      renderAnnotationLayer={false}
+                    />
+                  </Document>
+                </div>
+              ) : (
+                /* Desktop: Usar iframe nativo (Browser PDF Viewer) */
+                <iframe
+                  src={previewUrl}
+                  style={{ width: '100%', height: '600px', border: '1px solid #ddd', borderRadius: '8px' }}
+                  title="Vista Previa PDF"
+                />
+              )}
             </div>
           )}
         </div>
