@@ -354,8 +354,11 @@ export default function ConfigModal({
                                                             try {
                                                                 const { checkSubscriptionStatus } = await import('@/lib/api');
                                                                 const paymentStartTime = sessionStorage.getItem('payment_start_time');
-                                                                // Pass timestamp to ensure robust check for recent payment
-                                                                const status = await checkSubscriptionStatus(company.id, paymentStartTime ? Number(paymentStartTime) : null);
+                                                                // Si no hay fecha de inicio de pago en session (ej: recarga de página), buscamos solo en las últimas 24hs
+                                                                // Esto evita que clickear 'Verificar' active suscripciones viejas de Sandbox que deberían ignorarse
+                                                                const searchFrom = paymentStartTime ? Number(paymentStartTime) : Date.now() - (24 * 60 * 60 * 1000);
+
+                                                                const status = await checkSubscriptionStatus(company.id, searchFrom);
 
                                                                 if (status.active) {
                                                                     alert('¡Pago confirmado! Tu cuenta ahora es PRO. Recargando...');
