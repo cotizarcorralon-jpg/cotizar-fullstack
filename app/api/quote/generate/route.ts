@@ -87,17 +87,16 @@ export async function POST(req: Request) {
         // --- LOGGING & ANALYTICS ---
 
         // Fetch extra company info if available (email)
-        let userEmail = null;
+        let userAccountEmail = null;
+        let companyContactEmail = null;
+
         if (dbCompany) {
-            // Need to fetch email if we didn't before. 
-            // We selected {id, plan}. Let's assume we can get email from dbCompany if we update the query above or just re-fetch is unlikely needed if we just update the initial fetch.
-            // Let's rely on a separate quick fetch or update the top fetch.
-            // Actually, let's just save the quote.
             const fullComp = await prisma.company.findUnique({
                 where: { id: dbCompany.id },
                 select: { email: true, user: { select: { email: true } } }
             });
-            userEmail = fullComp?.email || fullComp?.user?.email;
+            userAccountEmail = fullComp?.user?.email; // Auth Email (Google)
+            companyContactEmail = fullComp?.email;    // Config Email (PDF)
         }
 
         // Save the Quote for Analytics (ALL users, including demo)
@@ -107,7 +106,8 @@ export async function POST(req: Request) {
                     rawMessage: text,
                     parsedResult: items as any, // Cast to Json
                     total: total,
-                    userEmail: userEmail,
+                    userEmail: userAccountEmail,
+                    companyEmail: companyContactEmail,
                     // Connect company ONLY if it exists in DB (not 'local')
                     company: dbCompany ? { connect: { id: dbCompany.id } } : undefined
                 }

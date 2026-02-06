@@ -96,7 +96,8 @@ model Quote {
   total     Float?
   
   // User Context 
-  userEmail String?   // Snapshot of email for easy analytics
+  userEmail    String?   // Google Account Email
+  companyEmail String?   // Configured "Contact" Email (PDF)
   
   // Relations
   companyId String?
