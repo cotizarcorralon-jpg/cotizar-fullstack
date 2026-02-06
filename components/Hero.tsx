@@ -29,7 +29,7 @@ export default function Hero({ onScrollToQuote }: { onScrollToQuote: () => void 
                     margin: '0 auto 2.5rem auto',
                     lineHeight: '1.6'
                 }}>
-                    Simplemente pegá el mensaje de WhatsApp y cotizApp interpreta el pedido, calcula los precios y genera un PDF listo para enviar.
+                    La herramienta inteligente (#1) para <strong>Corralones de Materiales en Argentina</strong>. Pegá el pedido de WhatsApp y nuestra IA arma el presupuesto de obra detallado al instante, listo para que lo descargues en PDF.
                 </p>
 
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
