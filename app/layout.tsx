@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
+import Script from "next/script";
 
 export const metadata: Metadata = {
     title: "CotizApp | Cotizador con IA para Corralones y Materiales de Construcción",
@@ -36,6 +37,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 />
             </head>
             <body>
+                <Script
+                    src="https://www.googletagmanager.com/gtag/js?id=G-SC6RJ1F8EH"
+                    strategy="afterInteractive"
+                />
+                <Script id="google-analytics" strategy="afterInteractive">
+                    {`
+                        window.dataLayer = window.dataLayer || [];
+                        function gtag(){dataLayer.push(arguments);}
+                        gtag('js', new Date());
+
+                        gtag('config', 'G-SC6RJ1F8EH');
+                    `}
+                </Script>
                 <Providers>{children}</Providers>
             </body>
         </html>
