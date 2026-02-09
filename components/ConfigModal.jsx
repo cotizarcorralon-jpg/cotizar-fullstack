@@ -23,7 +23,6 @@ export default function ConfigModal({
             ...c,
             web: c.web || c.website || '',
             logo: c.logo || c.logoUrl || '',
-            pdfBackground: c.pdfBackground || c.pdfBackgroundUrl || '',
             terms: c.terms || c.pdfTerms || ''
         };
     };
@@ -50,15 +49,6 @@ export default function ConfigModal({
         if (file) {
             const reader = new FileReader();
             reader.onload = (ev) => setLocalCompany({ ...localCompany, logo: ev.target.result });
-            reader.readAsDataURL(file);
-        }
-    };
-
-    const handlePdfBgUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (ev) => setLocalCompany({ ...localCompany, pdfBackground: ev.target.result });
             reader.readAsDataURL(file);
         }
     };
@@ -201,19 +191,6 @@ export default function ConfigModal({
                                         <span style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Logo</span>
                                         <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ marginTop: '0.5rem' }} />
                                         {localCompany.logo && <img src={localCompany.logo} alt="Logo Preview" style={{ height: '50px', marginTop: '1rem', display: 'block' }} />}
-                                    </label>
-
-                                    <label>
-                                        <span style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.25rem' }}>PDF Modelo</span>
-                                        <span style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', marginBottom: '0.5rem' }}>
-                                            Subí una imagen de un presupuesto ejemplo de tu empresa para usarlo de fondo.
-                                        </span>
-                                        <input type="file" accept="image/*" onChange={handlePdfBgUpload} style={{ marginTop: '0.5rem' }} />
-                                        {localCompany.pdfBackground && (
-                                            <div style={{ marginTop: '0.5rem', border: '1px solid #ddd', padding: '4px', maxWidth: '200px' }}>
-                                                <img src={localCompany.pdfBackground} alt="Fondo PDF Preview" style={{ width: '100%', display: 'block' }} />
-                                            </div>
-                                        )}
                                     </label>
 
                                     <label>

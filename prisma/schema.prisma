@@ -65,7 +65,6 @@ model Company {
   email     String?
   website   String?
   logoUrl   String?
-  pdfBackgroundUrl String?
   pdfTerms  String?
   plan      String   @default("Guest")
   
