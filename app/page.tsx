@@ -416,6 +416,11 @@ export default function Home() {
             onAddItem={() => {
               setQuoteItems([...quoteItems, { quantity: 1, unit: 'u', name: '', price: 0, subtotal: 0 }]);
             }}
+            onRemoveItem={(index) => {
+              const newItems = quoteItems.filter((_, i) => i !== index);
+              setQuoteItems(newItems);
+              setQuoteTotal(newItems.reduce((acc, item) => acc + item.subtotal, 0));
+            }}
             onDownload={handleDownload}
             showPalletInfo={showPalletInfo}
             isDemo={!user}

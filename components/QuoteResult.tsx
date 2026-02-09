@@ -32,6 +32,7 @@ type QuoteResultProps = {
   company?: CompanyInfo;
   onUpdateItem: (index: number, field: string, value: any) => void;
   onAddItem: () => void;
+  onRemoveItem: (index: number) => void;
   onDownload: () => void;
   showPalletInfo: boolean;
   isDemo: boolean;
@@ -43,6 +44,7 @@ export default function QuoteResult(props: QuoteResultProps) {
     total,
     onUpdateItem,
     onAddItem,
+    onRemoveItem,
     onDownload,
     showPalletInfo,
     isDemo
@@ -161,6 +163,7 @@ export default function QuoteResult(props: QuoteResultProps) {
                   <th style={{ padding: '0.75rem', color: 'var(--text-sub)' }}>Material</th>
                   <th style={{ padding: '0.75rem', color: 'var(--text-sub)', textAlign: 'right' }}>Precio Unit.</th>
                   <th style={{ padding: '0.75rem', color: 'var(--text-sub)', textAlign: 'right' }}>Subtotal</th>
+                  <th style={{ padding: '0.75rem', color: 'var(--text-sub)', width: '40px' }}></th>
                 </tr>
               </thead>
 
@@ -228,6 +231,24 @@ export default function QuoteResult(props: QuoteResultProps) {
 
                     <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: '600' }}>
                       ${item.subtotal.toLocaleString('es-AR')}
+                    </td>
+                    <td style={{ padding: '0.75rem', textAlign: 'center' }}>
+                      <button
+                        onClick={() => onRemoveItem(idx)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: '#ef4444',
+                          padding: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                        title="Eliminar ítem"
+                      >
+                        <span style={{ fontSize: '1.2rem', lineHeight: 1 }}>🗑️</span>
+                      </button>
                     </td>
                   </tr>
                 ))}
