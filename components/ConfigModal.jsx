@@ -204,9 +204,9 @@ export default function ConfigModal({
                                     </label>
 
                                     <label>
-                                        <span style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.25rem' }}>Imagen Fondo PDF (Hoja Membretada)</span>
+                                        <span style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.25rem' }}>PDF Modelo</span>
                                         <span style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', marginBottom: '0.5rem' }}>
-                                            Subí una imagen A4 o similar. Cubrirá todo el fondo. Dejá espacio en el centro para la tabla.
+                                            Subí una imagen de un presupuesto ejemplo de tu empresa para usarlo de fondo.
                                         </span>
                                         <input type="file" accept="image/*" onChange={handlePdfBgUpload} style={{ marginTop: '0.5rem' }} />
                                         {localCompany.pdfBackground && (
