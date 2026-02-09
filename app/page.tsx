@@ -413,6 +413,9 @@ export default function Home() {
             total={quoteTotal}
             company={company || { name: 'Empresa Demo (Vista Previa)', address: 'Dirección Ejemplo 123', whatsapp: '5491112345678', email: 'demo@email.com' }}
             onUpdateItem={handleUpdateItem}
+            onAddItem={() => {
+              setQuoteItems([...quoteItems, { quantity: 1, unit: 'u', name: '', price: 0, subtotal: 0 }]);
+            }}
             onDownload={handleDownload}
             showPalletInfo={showPalletInfo}
             isDemo={!user}

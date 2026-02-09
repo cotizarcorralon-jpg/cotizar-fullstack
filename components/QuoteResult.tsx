@@ -31,6 +31,7 @@ type QuoteResultProps = {
   total: number;
   company?: CompanyInfo;
   onUpdateItem: (index: number, field: string, value: any) => void;
+  onAddItem: () => void;
   onDownload: () => void;
   showPalletInfo: boolean;
   isDemo: boolean;
@@ -41,6 +42,7 @@ export default function QuoteResult(props: QuoteResultProps) {
     items,
     total,
     onUpdateItem,
+    onAddItem,
     onDownload,
     showPalletInfo,
     isDemo
@@ -251,6 +253,45 @@ export default function QuoteResult(props: QuoteResultProps) {
                 </tr>
               </tfoot>
             </table>
+          </div>
+
+          <div style={{
+            marginTop: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            padding: '0.75rem 1rem',
+            background: '#f0fdf4',
+            borderRadius: '8px',
+            border: '1px dashed #4ade80'
+          }}>
+            <p style={{ margin: 0, fontSize: '0.9rem', color: '#15803d', fontWeight: 500 }}>
+              ¿Faltó algún material? Si algo no salió en la lista, puedes agregarlo desde aquí:
+            </p>
+            <button
+              onClick={onAddItem}
+              title="Agregar ítem manualmente"
+              style={{
+                background: '#22c55e',
+                color: 'white',
+                border: 'none',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '1.5rem',
+                lineHeight: '1',
+                fontWeight: 'bold',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                paddingBottom: '2px'
+              }}
+            >
+              +
+            </button>
           </div>
 
           <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem', alignItems: 'center' }}>
