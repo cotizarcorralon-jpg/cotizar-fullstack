@@ -26,28 +26,35 @@ export default function Header({ onOpenConfig, user, plan, onLoginClick }) {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    {user && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: '1rem' }}>
-                            <div className="hidden-mobile" style={{ textAlign: 'right', fontSize: '0.85rem' }}>
-                                <div className="text-truncate" style={{ fontWeight: '500', color: '#334155' }}>{user.email}</div>
+                    {user ? (
+                        <>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: '0.5rem' }}>
+                                <div className="hidden-mobile" style={{ textAlign: 'right', fontSize: '0.85rem' }}>
+                                    <div className="text-truncate" style={{ fontWeight: '500', color: '#334155', maxWidth: '150px' }}>{user.email}</div>
+                                </div>
+                                <div style={{
+                                    fontSize: '0.7rem', fontWeight: 'bold',
+                                    padding: '2px 8px', borderRadius: '12px',
+                                    textTransform: 'uppercase',
+                                    backgroundColor: plan === 'Profesional' ? '#fef3c7' : '#f1f5f9',
+                                    color: plan === 'Profesional' ? '#d97706' : '#64748b',
+                                    border: plan === 'Profesional' ? '1px solid #fcd34d' : '1px solid #e2e8f0'
+                                }}>
+                                    {plan === 'Profesional' ? 'PRO' : 'Gratis'}
+                                </div>
                             </div>
-                            <div style={{
-                                fontSize: '0.7rem', fontWeight: 'bold',
-                                padding: '2px 8px', borderRadius: '12px',
-                                textTransform: 'uppercase',
-                                backgroundColor: plan === 'Profesional' ? '#fef3c7' : '#f1f5f9',
-                                color: plan === 'Profesional' ? '#d97706' : '#64748b',
-                                border: plan === 'Profesional' ? '1px solid #fcd34d' : '1px solid #e2e8f0'
-                            }}>
-                                {plan === 'Profesional' ? 'PRO' : 'Gratis'}
-                            </div>
-                        </div>
-                    )}
 
-                    <button className="btn btn-secondary" onClick={onOpenConfig}>
-                        <Settings size={18} />
-                        <span className="hidden-mobile">Configuración</span>
-                    </button>
+                            <button className="btn btn-secondary" onClick={onOpenConfig} title="Configuración">
+                                <Settings size={18} />
+                                <span className="hidden-mobile">Configuración</span>
+                            </button>
+                        </>
+                    ) : (
+                        <button className="btn btn-primary" onClick={onLoginClick}>
+                            <LogIn size={18} style={{ marginRight: '8px' }} />
+                            Ingresar
+                        </button>
+                    )}
                 </div>
             </div>
         </header>

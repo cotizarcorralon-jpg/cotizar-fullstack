@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Plus, Search, Check } from 'lucide-react';
+import { X, Plus, Search, Check, LogOut } from 'lucide-react';
+import { signOut } from "next-auth/react";
 
 export default function ConfigModal({
     isOpen, onClose,
@@ -72,6 +73,19 @@ export default function ConfigModal({
         setNewMaterial({ name: '', unit: '', price: '' });
     };
 
+    const handleLogout = () => {
+        localStorage.removeItem('cotizar_user');
+        localStorage.setItem('cotizar_company', JSON.stringify({
+            id: 'local',
+            name: 'Mi Empresa',
+            address: 'Dirección de ejemplo',
+            whatsapp: '5491112345678',
+            email: 'contacto@ejemplo.com',
+            plan: 'Guest'
+        }));
+        signOut({ callbackUrl: '/' });
+    };
+
     const filteredMaterials = (materials || []).filter(m =>
         m.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -111,7 +125,7 @@ export default function ConfigModal({
                                 >
                                     <option value="company">Empresa</option>
                                     <option value="materials">Materiales y Precios</option>
-                                    <option value="plan">Mi Plan</option>
+                                    <option value="account">Mi Cuenta</option>
                                 </select>
                             </div>
 
@@ -130,10 +144,10 @@ export default function ConfigModal({
                                     Materiales y Precios
                                 </button>
                                 <button
-                                    onClick={() => setActiveTab('plan')}
-                                    className={`btn ${activeTab === 'plan' ? 'btn-primary' : 'btn-ghost'}`}
+                                    onClick={() => setActiveTab('account')}
+                                    className={`btn ${activeTab === 'account' ? 'btn-primary' : 'btn-ghost'}`}
                                     style={{ justifyContent: 'flex-start', width: '100%' }}>
-                                    Mi Plan
+                                    Mi Cuenta
                                 </button>
                             </nav>
                         </aside>
@@ -290,136 +304,175 @@ export default function ConfigModal({
                                 </div>
                             )}
 
-                            {activeTab === 'plan' && (
-                                <div style={{ textAlign: 'center', maxWidth: '500px', margin: '0 auto', paddingTop: '2rem' }}>
-                                    <h3 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '1rem' }}>
-                                        Plan Actual: {plan === 'Guest' ? 'Gratis (Sin Registro)' : plan}
-                                    </h3>
+                            {activeTab === 'account' && (
+                                <div style={{ maxWidth: '500px', margin: '0 auto', paddingTop: '1rem' }}>
 
-                                    <div className="card" style={{ padding: '2rem', border: plan === 'Profesional' ? '2px solid #10b981' : '2px solid #3b82f6' }}>
-                                        <div style={{ marginBottom: '1.5rem' }}>
-                                            <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>
-                                                {plan === 'Profesional' ? (
-                                                    <span style={{ color: '#10b981', fontWeight: 'bold' }}>¡Tenés el Plan Profesional Activo!</span>
-                                                ) : (
-                                                    <>Estás usando la cuenta <strong>Gratis</strong> con 3 generaciones mensuales.</>
-                                                )}
-                                            </p>
-                                            <ul style={{ listStyle: 'none', textAlign: 'left', margin: '1rem 0', color: 'var(--text-secondary)' }}>
-                                                <li style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                                    <Check size={18} color={plan === 'Profesional' ? 'green' : '#3b82f6'} />
-                                                    {plan === 'Profesional' ? 'Presupuestos ilimitados' : '3 presupuestos por mes'}
-                                                </li>
-                                                <li style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                                    <Check size={18} color={plan === 'Profesional' ? 'green' : '#3b82f6'} />
-                                                    {plan === 'Profesional' ? 'Carga tus propios productos' : 'Configuración básica'}
-                                                </li>
-                                                <li style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                                    <Check size={18} color={plan === 'Profesional' ? 'green' : '#3b82f6'} />
-                                                    {plan === 'Profesional' ? 'Subí la información de tu empresa' : 'Sin posibilidad de agregar productos'}
-                                                </li>
-                                                <li style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                                                    <Check size={18} color={plan === 'Profesional' ? 'green' : '#3b82f6'} />
-                                                    {plan === 'Profesional' ? 'Soporte prioritario' : 'Soporte estándar'}
-                                                </li>
-                                            </ul>
+                                    {/* User Info Section */}
+                                    <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div>
+                                            <h4 style={{ fontWeight: 'bold', color: '#334155', marginBottom: '0.25rem' }}>Sesión Actual</h4>
+                                            <p style={{ color: '#64748b', fontSize: '0.9rem' }}>{company?.email || 'Usuario Invitado'}</p>
                                         </div>
+                                        <button
+                                            onClick={handleLogout}
+                                            className="btn"
+                                            style={{
+                                                backgroundColor: '#fee2e2', color: '#ef4444',
+                                                borderColor: '#fecaca', display: 'flex', alignItems: 'center', gap: '8px'
+                                            }}
+                                        >
+                                            <LogOut size={16} /> Cerrar Sesión
+                                        </button>
+                                    </div>
 
-                                        {plan !== 'Profesional' && (
-                                            <>
-                                                <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-                                                    🚀 <strong>¿Necesitás cotizar sin límites?</strong> Suscribite al plan ilimitado.
+                                    {/* Plan Section */}
+                                    <div style={{ textAlign: 'center' }}>
+                                        <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '1rem' }}>
+                                            Plan Actual: {plan === 'Guest' ? 'Gratis (Registrado)' : plan}
+                                        </h3>
+
+                                        <div className="card" style={{ padding: '2rem', border: plan === 'Profesional' ? '2px solid #10b981' : '2px solid #3b82f6' }}>
+                                            <div style={{ marginBottom: '1.5rem' }}>
+                                                <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>
+                                                    {plan === 'Profesional' ? (
+                                                        <span style={{ color: '#10b981', fontWeight: 'bold' }}>¡Tenés el Plan Profesional Activo!</span>
+                                                    ) : (
+                                                        <>Estás usando la cuenta <strong>Gratis</strong>.</>
+                                                    )}
                                                 </p>
+                                                <ul style={{ listStyle: 'none', textAlign: 'left', margin: '1rem 0', color: 'var(--text-secondary)' }}>
+                                                    <li style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                                        <Check size={18} color={plan === 'Profesional' ? 'green' : '#3b82f6'} />
+                                                        {plan === 'Profesional' ? 'Presupuestos ilimitados' : '3 presupuestos por mes'}
+                                                    </li>
+                                                    <li style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                                        <Check size={18} color={plan === 'Profesional' ? 'green' : '#3b82f6'} />
+                                                        {plan === 'Profesional' ? 'Gestión total de materiales' : 'Gestión básica de materiales'}
+                                                    </li>
+                                                    <li style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                                        <Check size={18} color={plan === 'Profesional' ? 'green' : '#3b82f6'} />
+                                                        {plan === 'Profesional' ? 'Subí la información de tu empresa' : 'Configuración de empresa'}
+                                                    </li>
+                                                    <li style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                                        <Check size={18} color={plan === 'Profesional' ? 'green' : '#3b82f6'} />
+                                                        {plan === 'Profesional' ? 'Soporte prioritario' : 'Soporte estándar'}
+                                                    </li>
+                                                </ul>
+                                            </div>
 
-
-                                                <button
-                                                    onClick={onUpgrade}
-                                                    className="btn btn-primary"
-                                                    style={{ width: '100%', justifyContent: 'center', marginBottom: '1rem' }}
+                                            <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #f1f5f9' }}>
+                                                <a
+                                                    href="https://wa.me/541171918141?text=Hola%20Brandon,%20tengo%20una%20consulta%20sobre%20mi%20cuenta%20de%20CotizApp."
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="btn btn-secondary"
+                                                    style={{ width: '100%', justifyContent: 'center', display: 'flex', gap: '0.5rem', alignItems: 'center' }}
                                                 >
-                                                    Suscribirme al Plan Ilimitado
-                                                </button>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                                    </svg>
+                                                    Contactar a Soporte
+                                                </a>
+                                            </div>
 
-                                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-                                                    Al hacer clic, serás redirigido a Mercado Pago para completar la suscripción de forma segura.
-                                                </p>
-
-                                                <div style={{ marginTop: '2rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
-                                                    <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.5rem' }}>
-                                                        ¿Ya realizaste el pago?
+                                            {plan !== 'Profesional' && (
+                                                <>
+                                                    <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+                                                        🚀 <strong>¿Necesitás cotizar sin límites?</strong> Suscribite al plan ilimitado.
                                                     </p>
+
+
                                                     <button
-                                                        className="btn btn-secondary"
-                                                        onClick={() => setShowSupportModal(true)}
-                                                        style={{ fontSize: '0.85rem', width: '100%', justifyContent: 'center' }}
+                                                        onClick={onUpgrade}
+                                                        className="btn btn-primary"
+                                                        style={{ width: '100%', justifyContent: 'center', marginBottom: '1rem' }}
                                                     >
-                                                        🔄 Verificar Estado de Suscripción
+                                                        Suscribirme al Plan Ilimitado
                                                     </button>
-                                                </div>
-                                            </>
-                                        )}
+
+                                                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                                                        Al hacer clic, serás redirigido a Mercado Pago para completar la suscripción de forma segura.
+                                                    </p>
+
+                                                    <div style={{ marginTop: '2rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+                                                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.5rem' }}>
+                                                            ¿Ya realizaste el pago?
+                                                        </p>
+                                                        <button
+                                                            className="btn btn-secondary"
+                                                            onClick={() => setShowSupportModal(true)}
+                                                            style={{ fontSize: '0.85rem', width: '100%', justifyContent: 'center' }}
+                                                        >
+                                                            🔄 Verificar Estado de Suscripción
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             )}
 
                         </main>
                     </div>
-                </div>
-            </div>
+                </div >
+            </div >
 
             {/* Support Modal for Subscription Issue */}
-            {showSupportModal && (
-                <div style={{
-                    position: 'fixed', inset: 0, zIndex: 1100,
-                    backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
-                    <div className="card" style={{ maxWidth: '450px', width: '90%', textAlign: 'center', padding: '2rem', position: 'relative' }}>
-                        <button
-                            onClick={() => setShowSupportModal(false)}
-                            style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}
-                        >
-                            <X size={24} />
-                        </button>
+            {
+                showSupportModal && (
+                    <div style={{
+                        position: 'fixed', inset: 0, zIndex: 1100,
+                        backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                        <div className="card" style={{ maxWidth: '450px', width: '90%', textAlign: 'center', padding: '2rem', position: 'relative' }}>
+                            <button
+                                onClick={() => setShowSupportModal(false)}
+                                style={{ position: 'absolute', top: '15px', right: '15px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}
+                            >
+                                <X size={24} />
+                            </button>
 
-                        <div style={{ background: '#eff6ff', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-                            <span style={{ fontSize: '2rem' }}>🤔</span>
+                            <div style={{ background: '#eff6ff', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                                <span style={{ fontSize: '2rem' }}>🤔</span>
+                            </div>
+
+                            <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem', color: '#1e293b' }}>
+                                ¿Ya realizaste el pago?
+                            </h3>
+
+                            <p style={{ color: '#475569', lineHeight: '1.6', marginBottom: '2rem' }}>
+                                La activación suele ser inmediata, pero a veces puede demorar unos minutos. Si ya pagaste y sigue sin activarse, avísanos para habilitarlo manualmente.
+                            </p>
+
+                            <a
+                                href="https://wa.me/541171918141?text=Hola%20Brandon,%20ya%20pagu%C3%A9%20la%20suscripci%C3%B3n%20en%20CotizApp%20pero%20sigo%20viendo%20el%20plan%20gratis."
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-primary"
+                                style={{
+                                    width: '100%',
+                                    justifyContent: 'center',
+                                    backgroundColor: '#25D366',
+                                    border: 'none',
+                                    padding: '1rem',
+                                    fontSize: '1rem'
+                                }}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                </svg>
+                                Contactar a Soporte
+                            </a>
+
+                            <p style={{ marginTop: '1.5rem', fontSize: '0.85rem', color: '#94a3b8' }}>
+                                Te responderemos a la brevedad para solucionarlo.
+                            </p>
                         </div>
-
-                        <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem', color: '#1e293b' }}>
-                            ¿Ya realizaste el pago?
-                        </h3>
-
-                        <p style={{ color: '#475569', lineHeight: '1.6', marginBottom: '2rem' }}>
-                            La activación suele ser inmediata, pero a veces puede demorar unos minutos. Si ya pagaste y sigue sin activarse, avísanos para habilitarlo manualmente.
-                        </p>
-
-                        <a
-                            href="https://wa.me/541171918141?text=Hola%20Brandon,%20ya%20pagu%C3%A9%20la%20suscripci%C3%B3n%20en%20CotizApp%20pero%20sigo%20viendo%20el%20plan%20gratis."
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn btn-primary"
-                            style={{
-                                width: '100%',
-                                justifyContent: 'center',
-                                backgroundColor: '#25D366',
-                                border: 'none',
-                                padding: '1rem',
-                                fontSize: '1rem'
-                            }}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
-                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                            </svg>
-                            Contactar a Soporte
-                        </a>
-
-                        <p style={{ marginTop: '1.5rem', fontSize: '0.85rem', color: '#94a3b8' }}>
-                            Te responderemos a la brevedad para solucionarlo.
-                        </p>
                     </div>
-                </div>
-            )}
+                )
+            }
         </>
     );
 }
